@@ -256,6 +256,7 @@ private:
 #endif
     int returnValue;
     const PlatformStyle *platformStyle;
+    std::unique_ptr<QWidget> shutdownWindow;
 
     void startThread();
 };
@@ -466,7 +467,7 @@ void DarkSilkApplication::requestShutdown()
     clientModel = 0;
 
     // Show a simple window indicating shutdown status
-    ShutdownWindow::showShutdownWindow(window);
+    shutdownWindow.reset(ShutdownWindow::showShutdownWindow(window));
 
     // Request shutdown from core thread
     Q_EMIT requestedShutdown();

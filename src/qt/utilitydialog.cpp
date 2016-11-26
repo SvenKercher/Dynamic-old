@@ -209,7 +209,7 @@ ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
     setLayout(layout);
 }
 
-void ShutdownWindow::showShutdownWindow(DarkSilkGUI *window)
+QWidget *ShutdownWindow::showShutdownWindow(DarkSilkGUI *window)
 {
     if (!window)
         return;
