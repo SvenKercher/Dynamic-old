@@ -408,7 +408,7 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
 
         // Update coinbase transaction with additional info about stormnode and governace payments,
         // get some info back to pass to getblocktemplate
-        FillBlockPayments(txNew, nHeight, blockReward, pblock->txoutStormnode, pblock->voutSuperblock);
+        FillBlockPayments(txNew, nHeight, blockReward, nFees, pblock->txoutStormnode, pblock->voutSuperblock);
         // LogPrintf("CreateNewBlock -- nBlockHeight %d blockReward %lld txoutStormnode %s txNew %s",
         //             nHeight, blockReward, pblock->txoutStormnode.ToString(), txNew.ToString());
 

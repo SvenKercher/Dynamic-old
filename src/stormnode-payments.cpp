@@ -183,7 +183,7 @@ bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount bloc
     return true;
 }
 
-void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutStormnodeRet, std::vector<CTxOut>& voutSuperblockRet)
+void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CAmount nFees, CTxOut& txoutStormnodeRet, std::vector<CTxOut>& voutSuperblockRet)
 {
     // only create superblocks if spork is enabled AND if superblock is actually triggered
     // (height should be validated inside)
@@ -195,7 +195,7 @@ void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blo
     }
 
     // FILL BLOCK PAYEE WITH STORMNODE PAYMENT OTHERWISE
-    snpayments.FillBlockPayee(txNew);
+    snpayments.FillBlockPayee(txNew, nFees);
     LogPrint("snpayments", "FillBlockPayments -- nBlockHeight %d blockReward %lld txoutStormnodeRet %s txNew %s",
                             nBlockHeight, blockReward, txoutStormnodeRet.ToString(), txNew.ToString());
 }
@@ -237,7 +237,7 @@ bool CStormnodePayments::CanVote(COutPoint outStormnode, int nBlockHeight)
 *   Fill Stormnode ONLY payment block
 */
 
-void CStormnodePayments::FillBlockPayee(CMutableTransaction& txNew /*CAmount nFees*/)  // TODO GB : Add fees
+void CStormnodePayments::FillBlockPayee(CMutableTransaction& txNew, CAmount nFees)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();       
     if(!pindexPrev) return;        
@@ -268,7 +268,7 @@ void CStormnodePayments::FillBlockPayee(CMutableTransaction& txNew /*CAmount nFe
     if (!hasPayment && chainActive.Height() < Params().StartStormnodePayments()) { stormnodePayment = BLOCKCHAIN_INIT_REWARD; }
     else { stormnodePayment = STATIC_STORMNODE_PAYMENT; }
 
-    txNew.vout[0].nValue = blockValue;
+    txNew.vout[0].nValue = blockValue + nFees;
 
     if(hasPayment){
         txNew.vout.resize(2);
@@ -276,7 +276,7 @@ void CStormnodePayments::FillBlockPayee(CMutableTransaction& txNew /*CAmount nFe
         txNew.vout[1].scriptPubKey = payee;
         txNew.vout[1].nValue = stormnodePayment;
 
-        txNew.vout[0].nValue = STATIC_POW_REWARD;
+        txNew.vout[0].nValue = STATIC_POW_REWARD + nFees;
 
         CTxDestination address1;
         ExtractDestination(payee, address1);
