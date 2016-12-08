@@ -15,6 +15,7 @@
 
 #include <QWidget>
 #include <QCompleter>
+#include <QThread>
 
 class ClientModel;
 class PlatformStyle;
@@ -155,6 +156,7 @@ private:
     QMenu *peersTableContextMenu;
     QMenu *banTableContextMenu;
     QCompleter *autoCompleter;
+    QThread thread;
 };
 
 #endif // DARKSILK_QT_RPCCONSOLE_H

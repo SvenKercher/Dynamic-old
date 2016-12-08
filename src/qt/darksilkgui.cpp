@@ -627,6 +627,14 @@ void DarkSilkGUI::setClientModel(ClientModel *clientModel)
             dockIconMenu->clear();
         }
 #endif
+
+        // Propagate cleared model to child objects
+        rpcConsole->setClientModel(nullptr);
+#ifdef ENABLE_WALLET
+        walletFrame->setClientModel(nullptr);
+#endif // ENABLE_WALLET
+        unitDisplayControl->setOptionsModel(nullptr);
+        connectionsControl->setClientModel(nullptr);
     }
 }
 
