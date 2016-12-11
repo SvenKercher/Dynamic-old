@@ -918,7 +918,9 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
     }
     return false;
 }
-
+// This is needed because the foreach macro can't get over the comma in pair<t1, t2>
+#define PAIRTYPE(t1, t2)    std::pair<t1, t2> // TODO: Get this abomination out along with C++11 Compat
+ 
 // This should be called carefully:
 // either supply "wallet" (if already loaded) or "strWalletFile" (if wallet wasn't loaded yet)
 bool AutoBackupWallet (CWallet* wallet, std::string strWalletFile, std::string& strBackupWarning, std::string& strBackupError)
@@ -1015,7 +1017,7 @@ bool AutoBackupWallet (CWallet* wallet, std::string strWalletFile, std::string& 
 
         // Loop backward through backup files and keep the N newest ones (1 <= N <= 10)
         int counter = 0;
-        BOOST_REVERSE_FOREACH(std::pair<const std::time_t, fs::path> file, folder_set)
+        BOOST_REVERSE_FOREACH(PAIRTYPE(const std::time_t, fs::path) file, folder_set)
         {
             counter++;
             if (counter > nWalletBackups)
