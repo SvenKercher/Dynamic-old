@@ -252,7 +252,7 @@ std::string CKeePassIntegrator::constructHTTPPost(const std::string& strMsg, con
       << "Content-Length: " << strMsg.size() << "\r\n"
       << "Connection: close\r\n"
       << "Accept: application/json\r\n";
-    BOOST_FOREACH(const PAIRTYPE(std::string, std::string)& item, mapRequestHeaders)
+    BOOST_FOREACH(const std::pair<std::string, std::string>& item, mapRequestHeaders)
         streamOut << item.first << ": " << item.second << "\r\n";
     streamOut << "\r\n" << strMsg;
 

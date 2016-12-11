@@ -2157,7 +2157,7 @@ int CSandstormPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool f
     // look for denominations and update uses to 1
     BOOST_FOREACH(CTxOut txout, vecTxOut) {
         bool found = false;
-        BOOST_FOREACH (PAIRTYPE(CAmount, int)& s, vecDenomUsed) {
+        BOOST_FOREACH (std::pair<CAmount, int>& s, vecDenomUsed) {
             if(txout.nValue == s.first) {
                 s.second = 1;
                 found = true;
@@ -2169,7 +2169,7 @@ int CSandstormPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool f
     int nDenom = 0;
     int c = 0;
     // if the denomination is used, shift the bit on
-    BOOST_FOREACH (PAIRTYPE(CAmount, int)& s, vecDenomUsed) {
+    BOOST_FOREACH (std::pair<CAmount, int>& s, vecDenomUsed) {
         int bit = (fSingleRandomDenom ? GetRandInt(2) : 1) & s.second;
         nDenom |= bit << c++;
         if(fSingleRandomDenom && bit) break; // use just one random denomination
