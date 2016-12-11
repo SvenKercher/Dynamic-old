@@ -8,8 +8,8 @@ before_install:
   - wget https://download.ostroproject.org/mirror/sources/boost_1_58_0.tar.bz2
   - tar xvjf ./boost_1_58_0.tar.bz2 >> .anodial
   - cd boost_1_58_0 && ./bootstrap.sh --prefix=/opt/boost_1_58_0 >> .temporial
-  - sudo ./b2 >> .cerebrial
-  - sudo ./b2 --install >> .proveribial
+  - sudo ./b2
+  - sudo ./b2 --install
   - export BOOST_ROOT="/home/travis/build/SilkNetwork/DarkSilk-Core/boost_1_58_0"
   - cd ..
 
