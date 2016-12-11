@@ -606,7 +606,7 @@ void RPCRunLater(const std::string& name, boost::function<void(void)> func, int6
     deadlineTimers.erase(name);
     RPCTimerInterface* timerInterface = timerInterfaces.back();
     LogPrint("rpc", "queue run of timer %s in %i seconds (using %s)\n", name, nSeconds, timerInterface->Name());
-    deadlineTimers.insert(std::make_pair(name, std::unique_ptr<RPCTimerBase>(timerInterface->NewTimer(func, nSeconds*1000))));
+    deadlineTimers.emplace(name, std::unique_ptr<RPCTimerBase>(timerInterface->NewTimer(func, nSeconds*1000)));
 }
 
 const CRPCTable tableRPC;
