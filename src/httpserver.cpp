@@ -57,7 +57,7 @@ public:
         func(req.get(), path);
     }
 
-    boost::scoped_ptr<HTTPRequest> req;
+    std::unique_ptr<HTTPRequest> req;
 
 private:
     std::string path;
