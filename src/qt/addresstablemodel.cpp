@@ -84,7 +84,7 @@ public:
         cachedAddressTable.clear();
         {
             LOCK(wallet->cs_wallet);
-            BOOST_FOREACH(const std::pair<CTxDestination, CAddressBookData>& item, wallet->mapAddressBook)
+            for (const std::pair<CTxDestination, CAddressBookData>& item : wallet->mapAddressBook)
             {
                 const CDarkSilkAddress& address = item.first;
                 bool fMine = IsMine(*wallet, address.Get());

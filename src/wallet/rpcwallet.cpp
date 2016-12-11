@@ -99,7 +99,7 @@ void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry)
     }
     entry.push_back(Pair("bip125-replaceable", rbfStatus));
 
-    BOOST_FOREACH(const std::pair<string,string>& item, wtx.mapValue)
+    for (const std::pair<string,string>& item : wtx.mapValue)
         entry.push_back(Pair(item.first, item.second));
 }
 
@@ -362,7 +362,7 @@ UniValue getaddressesbyaccount(const UniValue& params, bool fHelp)
 
     // Find all addresses that have the given account
     UniValue ret(UniValue::VARR);
-    BOOST_FOREACH(const std::pair<CDarkSilkAddress, CAddressBookData>& item, pwalletMain->mapAddressBook)
+    for (const std::pair<CDarkSilkAddress, CAddressBookData>& item : pwalletMain->mapAddressBook)
     {
         const CDarkSilkAddress& address = item.first;
         const string& strName = item.second.name;
@@ -1252,7 +1252,7 @@ UniValue ListReceived(const UniValue& params, bool fByAccounts)
     // Reply
     UniValue ret(UniValue::VARR);
     map<string, tallyitem> mapAccountTally;
-    BOOST_FOREACH(const std::pair<CDarkSilkAddress, CAddressBookData>& item, pwalletMain->mapAddressBook)
+    for (const std::pair<CDarkSilkAddress, CAddressBookData>& item : pwalletMain->mapAddressBook)
     {
         const CDarkSilkAddress& address = item.first;
         const string& strAccount = item.second.name;
@@ -1671,7 +1671,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
             includeWatchonly = includeWatchonly | ISMINE_WATCH_ONLY;
 
     map<string, CAmount> mapAccountBalances;
-    BOOST_FOREACH(const std::pair<CTxDestination, CAddressBookData>& entry, pwalletMain->mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData>& entry : pwalletMain->mapAddressBook) {
         if (IsMine(*pwalletMain, entry.first) & includeWatchonly) // This address belongs to me
             mapAccountBalances[entry.second.name] = 0;
     }
@@ -1705,7 +1705,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
         mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
 
     UniValue ret(UniValue::VOBJ);
-    BOOST_FOREACH(const std::pair<string, CAmount>& accountBalance, mapAccountBalances) {
+    for (const std::pair<string, CAmount>& accountBalance : mapAccountBalances) {
         ret.push_back(Pair(accountBalance.first, ValueFromAmount(accountBalance.second)));
     }
     return ret;

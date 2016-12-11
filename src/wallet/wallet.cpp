@@ -2753,7 +2753,7 @@ bool CWallet::SelectCoinsGrouppedByAddresses(std::vector<CompactTallyItem>& vecT
 
     // construct resulting vector
     vecTallyRet.clear();
-    BOOST_FOREACH(const std::pair<CDarkSilkAddress, CompactTallyItem>& item, mapTally)
+    for (const std::pair<CDarkSilkAddress, CompactTallyItem>& item : mapTally)
         vecTallyRet.push_back(item.second);
 
     // order by amounts per address, from smallest to largest
@@ -3266,7 +3266,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 //
                 // Note how the sequence number is set to max()-1 so that the
                 // nLockTime set above actually works.
-                BOOST_FOREACH(const std::pair<const CWalletTx*,unsigned int>& coin, setCoins){
+                for (const std::pair<const CWalletTx*,unsigned int>& coin : setCoins){
                     CTxIn txin = CTxIn(coin.first->GetHash(),coin.second,CScript(),
                                               std::numeric_limits<unsigned int>::max()-1);
                     txin.prevPubKey = coin.first->vout[coin.second].scriptPubKey;
@@ -3546,7 +3546,7 @@ bool CWallet::DelAddressBook(const CTxDestination& address)
         {
             // Delete destdata tuples associated with address
             std::string strAddress = CDarkSilkAddress(address).ToString();
-            BOOST_FOREACH(const std::pair<string, string> &item, mapAddressBook[address].destdata)
+            for (const std::pair<string, string> &item : mapAddressBook[address].destdata)
             {
                 CWalletDB(strWalletFile).EraseDestData(strAddress, item.first);
             }
@@ -3853,7 +3853,7 @@ std::set<CTxDestination> CWallet::GetAccountAddresses(const std::string& strAcco
 {
     LOCK(cs_wallet);
     set<CTxDestination> result;
-    BOOST_FOREACH(const std::pair<CTxDestination, CAddressBookData>& item, mapAddressBook)
+    for (const std::pair<CTxDestination, CAddressBookData>& item : mapAddressBook)
     {
         const CTxDestination& address = item.first;
         const string& strName = item.second.name;

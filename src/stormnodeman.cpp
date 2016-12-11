@@ -518,7 +518,7 @@ CStormnode* CStormnodeMan::GetNextStormnodeInQueueForPayment(int nBlockHeight, b
     int nTenthNetwork = CountEnabled()/10;
     int nCountTenth = 0;
     arith_uint256 nHighest = 0;
-    BOOST_FOREACH (std::pair<int, CStormnode*>& s, vecStormnodeLastPaid){
+    for (std::pair<int, CStormnode*>& s : vecStormnodeLastPaid){
         arith_uint256 nScore = s.second->CalculateScore(blockHash);
         if(nScore > nHighest){
             nHighest = nScore;
@@ -601,7 +601,7 @@ int CStormnodeMan::GetStormnodeRank(const CTxIn& vin, int nBlockHeight, int nMin
     sort(vecStormnodeScores.rbegin(), vecStormnodeScores.rend(), CompareScoreSN());
 
     int nRank = 0;
-    BOOST_FOREACH (std::pair<int64_t, CStormnode*>& scorePair, vecStormnodeScores) {
+    for (std::pair<int64_t, CStormnode*>& scorePair : vecStormnodeScores) {
         nRank++;
         if(scorePair.second->vin.prevout == vin.prevout) return nRank;
     }
@@ -633,7 +633,7 @@ std::vector<std::pair<int, CStormnode> > CStormnodeMan::GetStormnodeRanks(int nB
     sort(vecStormnodeScores.rbegin(), vecStormnodeScores.rend(), CompareScoreSN());
 
     int nRank = 0;
-    BOOST_FOREACH (std::pair<int64_t, CStormnode*>& s, vecStormnodeScores) {
+    for (std::pair<int64_t, CStormnode*>& s : vecStormnodeScores) {
         nRank++;
         vecStormnodeRanks.push_back(std::make_pair(nRank, *s.second));
     }
@@ -667,7 +667,7 @@ CStormnode* CStormnodeMan::GetStormnodeByRank(int nRank, int nBlockHeight, int n
     sort(vecStormnodeScores.rbegin(), vecStormnodeScores.rend(), CompareScoreSN());
 
     int rank = 0;
-    BOOST_FOREACH (std::pair<int64_t, CStormnode*>& s, vecStormnodeScores){
+    for (std::pair<int64_t, CStormnode*>& s : vecStormnodeScores){
         rank++;
         if(rank == nRank) {
             return s.second;
