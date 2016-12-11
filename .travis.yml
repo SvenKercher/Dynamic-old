@@ -6,10 +6,11 @@ dist: trusty
 
 before_install:
   - wget https://download.ostroproject.org/mirror/sources/boost_1_58_0.tar.bz2
-  - tar xvjf ./boost_1_58_0.tar.bz2
-  - cd boost_1_58_0 && ./bootstrap.sh --prefix=/opt/boost_1_58_0
-  - sudo ./b2
-  - sudo ./b2 --install
+  - tar xvjf ./boost_1_58_0.tar.bz2 -C ~/tmp1 >> .anodial
+  - cd boost_1_58_0 && ./bootstrap.sh --prefix=/opt/boost_1_58_0 >> .temporial
+  - sudo ./b2 >> .cerebrial
+  - sudo ./b2 --install >> .proveribial
+  - cd ..
 
 install:
   - sudo apt-get -qq update
