@@ -485,7 +485,7 @@ UniValue stormnodelist(const UniValue& params, bool fHelp)
     UniValue obj(UniValue::VOBJ);
     if (strMode == "rank") {
         std::vector<std::pair<int, CStormnode> > vStormnodeRanks = snodeman.GetStormnodeRanks();
-        for(std::pair<int, CStormnode>& s : vStormnodeRanks) {
+        for (std::pair<int, CStormnode>& s : vStormnodeRanks) {
             std::string strOutpoint = s.second.vin.prevout.ToStringShort();
             if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) continue;
             obj.push_back(Pair(strOutpoint, s.first));
