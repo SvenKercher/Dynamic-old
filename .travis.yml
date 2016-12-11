@@ -3,9 +3,17 @@ compiler: gcc
 os: linux
 sudo: required
 dist: trusty
+
+before_install:
+  - wget https://download.ostroproject.org/mirror/sources/boost_1_58_0.tar.bz2
+  - tar xvjf ./boost_1_58_0.tar.bz2
+  - cd boost_1_58_0 && ./bootstrap.sh --prefix=/opt/boost_1_58_0
+  - sudo ./b2
+  - sudo ./b2 --install
+
 install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y build-essential libtool autotools-dev autoconf pkg-config libssl-dev libboost-all-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libcrypto++-dev libevent-dev
+  - sudo apt-get install -y build-essential libtool autotools-dev autoconf pkg-config libssl-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libcrypto++-dev libevent-dev
   - sudo add-apt-repository -y ppa:silknetwork/silknetwork
   - sudo apt-get update -y && sudo apt-get install -y libdb4.8-dev libdb4.8++-dev
 script:
