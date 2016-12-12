@@ -95,6 +95,7 @@ DARKSILK_CORE_H = \
   consensus/merkle.h \
   consensus/params.h \
   consensus/validation.h \
+  consensus/tx_verify.h \
   core_io.h \
   core_memusage.h \
   sandstorm.h \
@@ -324,6 +325,7 @@ libdarksilk_common_a_SOURCES = \
   coins.cpp \
   compressor.cpp \
   consensus/merkle.cpp \
+  consensus/tx_verify.cpp \
   core_read.cpp \
   core_write.cpp \
   hash.cpp \
