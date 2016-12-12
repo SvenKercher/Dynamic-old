@@ -127,6 +127,7 @@ DARKSILK_CORE_H = \
   merkleblock.h \
   miner.h \
   net.h \
+  netaddress.h \
   netmessagemaker.h \
   netbase.h \
   netfulfilledman.h \
@@ -216,6 +217,7 @@ libdarksilk_server_a_SOURCES = \
   merkleblock.cpp \
   miner.cpp \
   net.cpp \
+  netaddress.cpp \
   netfulfilledman.cpp \
   noui.cpp \
   policy/fees.cpp \
