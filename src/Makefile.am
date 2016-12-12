@@ -126,6 +126,7 @@ DARKSILK_CORE_H = \
   merkleblock.h \
   miner.h \
   net.h \
+  netmessagemaker.h \
   netbase.h \
   netfulfilledman.h \
   noui.h \
