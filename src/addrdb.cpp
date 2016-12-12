@@ -13,8 +13,12 @@
 #include "streams.h"
 #include "tinyformat.h"
 #include "util.h"
+#include "net.h"
 
 #include <boost/filesystem.hpp>
+
+using namespace std;
+using namespace boost;
 
 ///
 /// CBanDB
