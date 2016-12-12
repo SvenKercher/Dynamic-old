@@ -96,6 +96,7 @@ DARKSILK_CORE_H = \
   consensus/params.h \
   consensus/validation.h \
   consensus/tx_verify.h \
+  consensus/header_verify.h \
   core_io.h \
   core_memusage.h \
   sandstorm.h \
@@ -205,6 +206,8 @@ libdarksilk_server_a_SOURCES = \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
+  consensus/tx_verify.cpp \
+  consensus/header_verify.cpp \
   httprpc.cpp \
   httpserver.cpp \
   init.cpp \
@@ -325,7 +328,6 @@ libdarksilk_common_a_SOURCES = \
   coins.cpp \
   compressor.cpp \
   consensus/merkle.cpp \
-  consensus/tx_verify.cpp \
   core_read.cpp \
   core_write.cpp \
   hash.cpp \
