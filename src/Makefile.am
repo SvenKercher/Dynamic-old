@@ -65,6 +65,7 @@ endif
 .PHONY: FORCE check-symbols check-security
 # darksilk core #
 DARKSILK_CORE_H = \
+  addrdb.h \
   activestormnode.h \
   addressindex.h \
   spentindex.h \
@@ -196,6 +197,7 @@ libdarksilk_util_a-clientversion.$(OBJEXT): obj/build.h
 libdarksilk_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(DARKSILK_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
 libdarksilk_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libdarksilk_server_a_SOURCES = \
+  addrdb.cpp \
   addrman.cpp \
   alert.cpp \
   bloom.cpp \
