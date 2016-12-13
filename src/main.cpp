@@ -53,7 +53,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/distributions/poisson.hpp>
 #include <boost/thread.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 
 using namespace std;
 
@@ -3229,7 +3228,7 @@ static bool ActivateBestChainStep(CValidationState& state, const CChainParams& c
         nHeight = nTargetHeight;
 
         // Connect new blocks.
-        for (CBlockIndex *pindexConnect : boost::adaptors::reverse(vpindexToConnect)) {
+        for (CBlockIndex *pindexConnect : reverse_adapt_container(vpindexToConnect)) {
             if (!ConnectTip(state, chainparams, pindexConnect, pindexConnect == pindexMostWork ? pblock : NULL)) {
                 if (state.IsInvalid()) {
                     // The block violates a consensus rule.
@@ -3328,7 +3327,7 @@ bool ActivateBestChain(CValidationState &state, const CChainParams& chainparams,
                     LOCK(cs_vNodes);
                     for (CNode* pnode : vNodes) {
                         if (chainActive.Height() > (pnode->nStartingHeight != -1 ? pnode->nStartingHeight - 2000 : nBlockEstimate)) {
-                            for (const uint256& hash : boost::adaptors::reverse(vHashes)) {
+                            for (const uint256& hash : reverse_adapt_container(vHashes)) {
                                 pnode->PushBlockHash(hash);
                             }
                         }
@@ -5884,7 +5883,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             } else {
                 vector<CInv> vGetData;
                 // Download as much as possible, from earliest to latest.
-                for (CBlockIndex *pindex : boost::adaptors::reverse(vToFetch)) {
+                for (CBlockIndex *pindex : reverse_adapt_container(vToFetch)) {
                     if (nodestate->nBlocksInFlight >= MAX_BLOCKS_IN_TRANSIT_PER_PEER) {
                         // Can't download any more from this peer
                         break;

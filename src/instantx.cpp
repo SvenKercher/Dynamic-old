@@ -18,7 +18,6 @@
 #include "spork.h"
 
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 
@@ -164,7 +163,7 @@ int64_t CreateTxLockCandidate(const CTransaction& tx)
 {
     // Find the age of the first input but all inputs must be old enough too
     int64_t nTxAge = 0;
-    for (const CTxIn& txin : boost::adaptors::reverse(tx.vin)) {
+    for (const CTxIn& txin : reverse_adapt_container(tx.vin)) {
         nTxAge = GetInputAge(txin);
         if(nTxAge < 9) { //1 less than the "send IX" gui requires, incase of a block propagating the network at the time
             LogPrintf("CreateTxLockCandidate -- Transaction not found / too new: nTxAge=%d, txid=%s\n", nTxAge, tx.GetHash().ToString());
