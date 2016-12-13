@@ -109,7 +109,7 @@ void CStormnodeSync::SwitchToNextAsset()
             TRY_LOCK(cs_vNodes, lockRecv);
             if(!lockRecv) return;
 
-            BOOST_FOREACH(CNode* pnode, vNodes) {
+            for (CNode* pnode : vNodes) {
                 netfulfilledman.AddFulfilledRequest(pnode->addr, "full-sync");
             }
 
@@ -153,7 +153,7 @@ void CStormnodeSync::ClearFulfilledRequests()
     TRY_LOCK(cs_vNodes, lockRecv);
     if(!lockRecv) return;
 
-    BOOST_FOREACH(CNode* pnode, vNodes)
+    for (CNode* pnode : vNodes)
     {
         netfulfilledman.RemoveFulfilledRequest(pnode->addr, "spork-sync");
         netfulfilledman.RemoveFulfilledRequest(pnode->addr, "stormnode-list-sync");
@@ -166,7 +166,7 @@ void CStormnodeSync::ClearFulfilledRequests()
 void ReleaseNodes(const std::vector<CNode*> &vNodesCopy)
 {
     LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodesCopy)
+    for (CNode* pnode : vNodesCopy)
         pnode->Release();
 }
 
@@ -228,11 +228,11 @@ void CStormnodeSync::ProcessTick()
     {
         LOCK(cs_vNodes);
         vNodesCopy = vNodes;
-        BOOST_FOREACH(CNode* pnode, vNodesCopy)
+        for (CNode* pnode : vNodesCopy)
             pnode->AddRef();
     }
 
-    BOOST_FOREACH(CNode* pnode, vNodesCopy)    {
+    for (CNode* pnode : vNodesCopy)    {
         // QUICK MODE (REGTEST ONLY!)
         if(Params().NetworkIDString() == CBaseChainParams::REGTEST)
         {

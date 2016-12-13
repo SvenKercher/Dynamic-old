@@ -513,7 +513,7 @@ void CStormnodeBlockPayees::AddPayee(const CStormnodePaymentVote& vote)
 {
     LOCK(cs_vecPayees);
 
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees) {
+    for (CStormnodePayee& payee : vecPayees) {
         if (payee.GetPayee() == vote.payee) {
             payee.AddVoteHash(vote.GetHash());
             return;
@@ -533,7 +533,7 @@ bool CStormnodeBlockPayees::GetBestPayee(CScript& payeeRet)
     }
 
     int nVotes = -1;
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees) {
+    for (CStormnodePayee& payee : vecPayees) {
         if (payee.GetVoteCount() > nVotes) {
             payeeRet = payee.GetPayee();
             nVotes = payee.GetVoteCount();
@@ -547,7 +547,7 @@ bool CStormnodeBlockPayees::HasPayeeWithVotes(CScript payeeIn, int nVotesReq)
 {
     LOCK(cs_vecPayees);
 
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees) {
+    for (CStormnodePayee& payee : vecPayees) {
         if (payee.GetVoteCount() >= nVotesReq && payee.GetPayee() == payeeIn) {
             return true;
         }
@@ -568,7 +568,7 @@ bool CStormnodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
     //require at least SNPAYMENTS_SIGNATURES_REQUIRED signatures
 
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees) {
+    for (CStormnodePayee& payee : vecPayees) {
         if (payee.GetVoteCount() >= nMaxSignatures) {
             nMaxSignatures = payee.GetVoteCount();
         }
@@ -577,9 +577,9 @@ bool CStormnodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     // if we don't have at least SNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < SNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees) {
+    for (CStormnodePayee& payee : vecPayees) {
         if (payee.GetVoteCount() >= SNPAYMENTS_SIGNATURES_REQUIRED) {
-            BOOST_FOREACH(CTxOut txout, txNew.vout) {
+            for (CTxOut txout : txNew.vout) {
                 if (payee.GetPayee() == txout.scriptPubKey && nStormnodePayment == txout.nValue) {
                     LogPrint("snpayments", "CStormnodeBlockPayees::IsTransactionValid -- Found required payment\n");
                     return true;
@@ -608,7 +608,7 @@ std::string CStormnodeBlockPayees::GetRequiredPaymentsString()
 
     std::string strRequiredPayments = "Unknown";
 
-    BOOST_FOREACH(CStormnodePayee& payee, vecPayees)
+    for (CStormnodePayee& payee : vecPayees)
     {
         CTxDestination address1;
         ExtractDestination(payee.GetPayee(), address1);
@@ -841,9 +841,9 @@ void CStormnodePayments::Sync(CNode* pnode, int nCountNeeded)
 
     for(int h = pCurrentBlockIndex->nHeight - nCountNeeded; h < pCurrentBlockIndex->nHeight + 20; h++) {
         if(mapStormnodeBlocks.count(h)) {
-            BOOST_FOREACH(CStormnodePayee& payee, mapStormnodeBlocks[h].vecPayees) {
+            for (CStormnodePayee& payee : mapStormnodeBlocks[h].vecPayees) {
                 std::vector<uint256> vecVoteHashes = payee.GetVoteHashes();
-                BOOST_FOREACH(uint256& hash, vecVoteHashes) {
+                for (uint256& hash : vecVoteHashes) {
                     if(!HasVerifiedPaymentVote(hash)) continue;
                     pnode->PushInventory(CInv(MSG_STORMNODE_PAYMENT_VOTE, hash));
                     nInvCount++;
@@ -868,7 +868,7 @@ void CStormnodePayments::RequestLowDataPaymentBlocks(CNode* pnode)
     while(it != mapStormnodeBlocks.end()) {
         int nTotalVotes = 0;
         bool fFound = false;
-        BOOST_FOREACH(CStormnodePayee& payee, it->second.vecPayees) {
+        for (CStormnodePayee& payee : it->second.vecPayees) {
             if(payee.GetVoteCount() >= SNPAYMENTS_SIGNATURES_REQUIRED) {
                 fFound = true;
                 break;
@@ -885,7 +885,7 @@ void CStormnodePayments::RequestLowDataPaymentBlocks(CNode* pnode)
         // DEBUG
         DBG (
             // Let's see why this failed
-            BOOST_FOREACH(CStormnodePayee& payee, it->second.vecPayees) {
+            for (CStormnodePayee& payee : it->second.vecPayees) {
                 CTxDestination address1;
                 ExtractDestination(payee.GetPayee(), address1);
                 CDarkSilkAddress address2(address1);

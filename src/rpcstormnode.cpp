@@ -256,7 +256,7 @@ UniValue stormnode(const UniValue& params, bool fHelp)
         UniValue statusObj(UniValue::VOBJ);
         statusObj.push_back(Pair("alias", strAlias));
 
-        BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+        for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
             if(sne.getAlias() == strAlias) {
                 fFound = true;
                 std::string strError;
@@ -301,7 +301,7 @@ UniValue stormnode(const UniValue& params, bool fHelp)
 
         UniValue resultsObj(UniValue::VOBJ);
 
-        BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+        for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
             std::string strError;
 
             CTxIn vin = CTxIn(uint256S(sne.getTxHash()), uint32_t(atoi(sne.getOutputIndex().c_str())));
@@ -349,7 +349,7 @@ UniValue stormnode(const UniValue& params, bool fHelp)
     {
         UniValue resultObj(UniValue::VOBJ);
 
-        BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+        for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
             CTxIn vin = CTxIn(uint256S(sne.getTxHash()), uint32_t(atoi(sne.getOutputIndex().c_str())));
             CStormnode *psn = snodeman.Find(vin);
 
@@ -374,7 +374,7 @@ UniValue stormnode(const UniValue& params, bool fHelp)
         pwalletMain->AvailableCoins(vPossibleCoins, true, NULL, false, ONLY_1000);
 
         UniValue obj(UniValue::VOBJ);
-        BOOST_FOREACH(COutput& out, vPossibleCoins) {
+        for (COutput& out : vPossibleCoins) {
             obj.push_back(Pair(out.tx->GetHash().ToString(), strprintf("%d", out.i)));
         }
 
@@ -492,7 +492,7 @@ UniValue stormnodelist(const UniValue& params, bool fHelp)
         }
     } else {
         std::vector<CStormnode> vStormnodes = snodeman.GetFullStormnodeVector();
-        BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+        for (CStormnode& sn : vStormnodes) {
             std::string strOutpoint = sn.vin.prevout.ToStringShort();
             if (strMode == "activeseconds") {
                 if (strFilter !="" && strOutpoint.find(strFilter) == std::string::npos) continue;
@@ -607,7 +607,7 @@ UniValue stormnodebroadcast(const UniValue& params, bool fHelp)
 
         statusObj.push_back(Pair("alias", strAlias));
 
-        BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+        for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
             if(sne.getAlias() == strAlias) {
                 fFound = true;
                 std::string strError;
@@ -657,7 +657,7 @@ UniValue stormnodebroadcast(const UniValue& params, bool fHelp)
         UniValue resultsObj(UniValue::VOBJ);
         std::vector<CStormnodeBroadcast> vecSnb;
 
-        BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+        for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
             std::string strError;
             CStormnodeBroadcast snb;
 
@@ -703,7 +703,7 @@ UniValue stormnodebroadcast(const UniValue& params, bool fHelp)
         int nDos = 0;
         UniValue returnObj(UniValue::VOBJ);
 
-        BOOST_FOREACH(CStormnodeBroadcast& snb, vecSnb) {
+        for (CStormnodeBroadcast& snb : vecSnb) {
             UniValue resultObj(UniValue::VOBJ);
 
             if(snb.CheckSignature(nDos)) {
@@ -756,7 +756,7 @@ UniValue stormnodebroadcast(const UniValue& params, bool fHelp)
         UniValue returnObj(UniValue::VOBJ);
 
         // verify all signatures first, bailout if any of them broken
-        BOOST_FOREACH(CStormnodeBroadcast& snb, vecSnb) {
+        for (CStormnodeBroadcast& snb : vecSnb) {
             UniValue resultObj(UniValue::VOBJ);
 
             resultObj.push_back(Pair("vin", snb.vin.ToString()));

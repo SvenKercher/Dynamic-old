@@ -84,7 +84,7 @@ bool IsInstantSendTxValid(const CTransaction& txCandidate)
     int64_t nValueOut = 0;
     bool fMissingInputs = false;
 
-    BOOST_FOREACH(const CTxOut& txout, txCandidate.vout) {
+    for (const CTxOut& txout : txCandidate.vout) {
         // InstandSend supports normal scripts and unspendable (i.e. data) scripts.
         // TODO: Look into other script types that are normal and can be included
         if(!txout.scriptPubKey.IsNormalPaymentScript() && !txout.scriptPubKey.IsUnspendable()) {
@@ -94,7 +94,7 @@ bool IsInstantSendTxValid(const CTransaction& txCandidate)
         nValueOut += txout.nValue;
     }
 
-    BOOST_FOREACH(const CTxIn& txin, txCandidate.vin) {
+    for (const CTxIn& txin : txCandidate.vin) {
         CTransaction tx2;
         uint256 hash;
         if(GetTransaction(txin.prevout.hash, tx2, Params().GetConsensus(), hash, true)) {
@@ -393,7 +393,7 @@ void UpdateLockedTransaction(const CTransaction& tx, bool fForceNotification)
 void LockTransactionInputs(const CTransaction& tx) {
     if(!mapLockRequestAccepted.count(tx.GetHash())) return;
 
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+    for (const CTxIn& txin : tx.vin)
         if(!mapLockedInputs.count(txin.prevout))
             mapLockedInputs.insert(std::make_pair(txin.prevout, tx.GetHash()));
 }
@@ -408,7 +408,7 @@ bool FindConflictingLocks(const CTransaction& tx)
         rescan the blocks and find they're acceptable and then take the chain with the most work.
     */
     uint256 txHash = tx.GetHash();
-    BOOST_FOREACH(const CTxIn& txin, tx.vin) {
+    for (const CTxIn& txin : tx.vin) {
         if(mapLockedInputs.count(txin.prevout)) {
             if(mapLockedInputs[txin.prevout] != txHash) {
                 LogPrintf("FindConflictingLocks -- found two complete conflicting Transaction Locks, removing both: txid=%s, txin=%s", txHash.ToString(), mapLockedInputs[txin.prevout].ToString());
@@ -477,13 +477,13 @@ void CleanTxLockCandidates()
             if(mapLockRequestAccepted.count(txLockCandidate.txHash)){
                 CTransaction& tx = mapLockRequestAccepted[txLockCandidate.txHash];
 
-                BOOST_FOREACH(const CTxIn& txin, tx.vin)
+                for (const CTxIn& txin : tx.vin)
                     mapLockedInputs.erase(txin.prevout);
 
                 mapLockRequestAccepted.erase(txLockCandidate.txHash);
                 mapLockRequestRejected.erase(txLockCandidate.txHash);
 
-                BOOST_FOREACH(const CTxLockVote& vote, txLockCandidate.vecTxLockVotes)
+                for (const CTxLockVote& vote : txLockCandidate.vecTxLockVotes)
                     if(mapTxLockVotes.count(vote.GetHash()))
                         mapTxLockVotes.erase(vote.GetHash());
             }
@@ -596,7 +596,7 @@ bool CTxLockVote::Sign()
 bool CTxLockCandidate::IsAllVotesValid()
 {
 
-    BOOST_FOREACH(const CTxLockVote& vote, vecTxLockVotes)
+    for (const CTxLockVote& vote : vecTxLockVotes)
     {
         int n = snodeman.GetStormnodeRank(vote.vinStormnode, vote.nBlockHeight, MIN_INSTANTSEND_PROTO_VERSION);
 
@@ -634,7 +634,7 @@ int CTxLockCandidate::CountVotes()
     if(nBlockHeight == 0) return -1;
 
     int nCount = 0;
-    BOOST_FOREACH(CTxLockVote vote, vecTxLockVotes)
+    for (CTxLockVote vote : vecTxLockVotes)
         if(vote.nBlockHeight == nBlockHeight)
             nCount++;
 
