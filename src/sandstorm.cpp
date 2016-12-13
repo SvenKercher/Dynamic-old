@@ -18,6 +18,7 @@
 #include "utilmoneystr.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 
 int nPrivateSendRounds = DEFAULT_PRIVATESEND_ROUNDS;
 int nPrivateSendAmount = DEFAULT_PRIVATESEND_AMOUNT;
@@ -1900,7 +1901,7 @@ bool CSandstormPool::CreateDenominated(const CompactTallyItem& tallyItem, bool f
     bool fSkip = true;
     do {
 
-        for (CAmount nDenomValue : reverse_adapt_container(vecPrivateSendDenominations)) {
+        for (CAmount nDenomValue : boost::adaptors::reverse(vecPrivateSendDenominations)) {
 
             if(fSkip) {
                 // Note: denoms are skipped if there are already DENOMS_COUNT_MAX of them
@@ -2206,7 +2207,7 @@ int CSandstormPool::GetDenominationsByAmounts(const std::vector<CAmount>& vecAmo
     CScript scriptTmp = CScript();
     std::vector<CTxOut> vecTxOut;
 
-    for (CAmount nAmount : reverse_adapt_container(vecAmount)) {
+    for (CAmount nAmount : boost::adaptors::reverse(vecAmount)) {
         CTxOut txout(nAmount, scriptTmp);
         vecTxOut.push_back(txout);
     }

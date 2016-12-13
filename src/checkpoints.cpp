@@ -11,10 +11,10 @@
 #include "chainparams.h"
 #include "main.h"
 #include "uint256.h"
-#include "util.h"
 
 #include <stdint.h>
 
+#include <boost/range/adaptor/reversed.hpp>
 
 namespace Checkpoints {
 
@@ -72,7 +72,7 @@ namespace Checkpoints {
     {
         const MapCheckpoints& checkpoints = data.mapCheckpoints;
 
-        for (const MapCheckpoints::value_type& i : reverse_adapt_container(checkpoints))
+        for (const MapCheckpoints::value_type& i : boost::adaptors::reverse(checkpoints))
         {
             const uint256& hash = i.second;
             BlockMap::const_iterator t = mapBlockIndex.find(hash);

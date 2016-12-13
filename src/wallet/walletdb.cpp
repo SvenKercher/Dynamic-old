@@ -21,6 +21,8 @@
 #include <boost/foreach.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/range/adaptor/reversed.hpp>
+
 
 using namespace std;
 
@@ -918,7 +920,9 @@ bool BackupWallet(const CWallet& wallet, const string& strDest)
     }
     return false;
 }
-
+// This is needed because the foreach macro can't get over the comma in pair<t1, t2>
+#define PAIRTYPE(t1, t2)    std::pair<t1, t2> // TODO: Get this abomination out along with C++11 Compat
+ 
 // This should be called carefully:
 // either supply "wallet" (if already loaded) or "strWalletFile" (if wallet wasn't loaded yet)
 bool AutoBackupWallet (CWallet* wallet, std::string strWalletFile, std::string& strBackupWarning, std::string& strBackupError)
@@ -1015,7 +1019,7 @@ bool AutoBackupWallet (CWallet* wallet, std::string strWalletFile, std::string& 
 
         // Loop backward through backup files and keep the N newest ones (1 <= N <= 10)
         int counter = 0;
-        for (std::pair(const std::time_t, fs::path) file : reverse_adapt_container(folder_set))
+        for (PAIRTYPE(const std::time_t, fs::path) file : boost::adaptors::reverse(folder_set))
         {
             counter++;
             if (counter > nWalletBackups)
