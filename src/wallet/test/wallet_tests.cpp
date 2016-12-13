@@ -54,7 +54,7 @@ static void add_coin(const CAmount& nValue, int nAge = 6*24, bool fIsFromMe = fa
 
 static void empty_wallet(void)
 {
-    for (COutput output ; vCoins)
+    for (COutput output : vCoins)
         delete output.tx;
     vCoins.clear();
 }
