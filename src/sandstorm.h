@@ -107,9 +107,9 @@ public:
     CSandStormEntry(const std::vector<CTxIn>& vecTxIn, const std::vector<CTxOut>& vecTxOut, const CTransaction& txCollateral) :
         txCollateral(txCollateral)
     {
-        BOOST_FOREACH(CTxIn txin, vecTxIn)
+        for (CTxIn txin : vecTxIn)
             vecTxSSIn.push_back(txin);
-        BOOST_FOREACH(CTxOut txout, vecTxOut)
+        for (CTxOut txout : vecTxOut)
             vecTxSSOut.push_back(txout);
     }
 
