@@ -102,7 +102,7 @@ void StormnodeList::StartAlias(std::string strAlias)
     std::string strStatusHtml;
     strStatusHtml += "<center>Alias: " + strAlias;
 
-    BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+    for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
         if(sne.getAlias() == strAlias) {
             std::string strError;
             CStormnodeBroadcast snb;
@@ -135,7 +135,7 @@ void StormnodeList::StartAll(std::string strCommand)
     int nCountFailed = 0;
     std::string strFailedHtml;
 
-    BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+    for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
         std::string strError;
         CStormnodeBroadcast snb;
 
@@ -220,7 +220,7 @@ void StormnodeList::updateMyNodeList(bool fForce)
     nTimeMyListUpdated = GetTime();
 
     ui->tableWidgetStormnodes->setSortingEnabled(false);
-    BOOST_FOREACH(CStormnodeConfig::CStormnodeEntry sne, stormnodeConfig.getEntries()) {
+    for (CStormnodeConfig::CStormnodeEntry sne : stormnodeConfig.getEntries()) {
         CTxIn txin = CTxIn(uint256S(sne.getTxHash()), uint32_t(atoi(sne.getOutputIndex().c_str())));
         CStormnode *psn = snodeman.Find(txin);
 
@@ -258,7 +258,7 @@ void StormnodeList::updateNodeList()
     ui->tableWidgetStormnodes->setRowCount(0);
     std::vector<CStormnode> vStormnodes = snodeman.GetFullStormnodeVector();
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes)
+    for (CStormnode& sn : vStormnodes)
     {
         // populate list
         // Address, Protocol, Status, Active Seconds, Last Seen, Pub Key

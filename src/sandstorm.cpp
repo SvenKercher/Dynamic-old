@@ -18,6 +18,7 @@
 #include "utilmoneystr.h"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 
 int nPrivateSendRounds = DEFAULT_PRIVATESEND_ROUNDS;
 int nPrivateSendAmount = DEFAULT_PRIVATESEND_AMOUNT;
@@ -103,7 +104,7 @@ void CSandstormPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         vRecv >> ssq;
 
         // process every ssq only once
-        BOOST_FOREACH(CSandstormQueue q, vecSandstormQueue) {
+        for (CSandstormQueue q : vecSandstormQueue) {
             if(q == ssq) {
                 // LogPrint("privatesend", "SSQUEUE -- %s seen\n", ssq.ToString());
                 return;
@@ -136,7 +137,7 @@ void CSandstormPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                 SubmitDenominate();
             }
         } else {
-            BOOST_FOREACH(CSandstormQueue q, vecSandstormQueue) {
+            for (CSandstormQueue q : vecSandstormQueue) {
                 if(q.vin == ssq.vin) {
                     // no way same sn can send another "not yet ready" ssq this soon
                     LogPrint("privatesend", "SSQUEUE -- Stormnode %s is sending WAY too many ssq messages\n", psn->addr.ToString());
@@ -203,7 +204,7 @@ void CSandstormPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
             CMutableTransaction tx;
 
-            BOOST_FOREACH(const CTxOut txout, entry.vecTxSSOut) {
+            for (const CTxOut txout : entry.vecTxSSOut) {
                 nValueOut += txout.nValue;
                 tx.vout.push_back(txout);
 
@@ -219,7 +220,7 @@ void CSandstormPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
                 }
             }
 
-            BOOST_FOREACH(const CTxIn txin, entry.vecTxSSIn) {
+            for (const CTxIn txin : entry.vecTxSSIn) {
                 tx.vin.push_back(txin);
 
                 LogPrint("privatesend", "SSVIN -- txin=%s\n", txin.ToString());
@@ -342,7 +343,7 @@ void CSandstormPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         int nTxInIndex = 0;
         int nTxInsCount = (int)vecTxIn.size();
 
-        BOOST_FOREACH(const CTxIn txin, vecTxIn) {
+        for (const CTxIn txin : vecTxIn) {
             nTxInIndex++;
             if(!AddScriptSig(txin)) {
                 LogPrint("privatesend", "SSSIGNFINALTX -- AddScriptSig() failed at %d/%d, session: %d\n", nTxInIndex, nTxInsCount, nSessionID);
@@ -483,7 +484,7 @@ void CSandstormPool::UnlockCoins()
     while(true) {
         TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
         if(!lockWallet) {MilliSleep(50); continue;}
-        BOOST_FOREACH(COutPoint outpoint, vecOutPointLocked)
+        for (COutPoint outpoint : vecOutPointLocked)
             pwalletMain->UnlockCoin(outpoint);
         break;
     }
@@ -592,10 +593,10 @@ void CSandstormPool::CreateFinalTransaction()
 
     // make our new transaction
     for(int i = 0; i < GetEntriesCount(); i++) {
-        BOOST_FOREACH(const CTxSSOut& txssout, vecEntries[i].vecTxSSOut)
+        for (const CTxSSOut& txssout : vecEntries[i].vecTxSSOut)
             txNew.vout.push_back(txssout);
 
-        BOOST_FOREACH(const CTxSSIn& txssin, vecEntries[i].vecTxSSIn)
+        for (const CTxSSIn& txssin : vecEntries[i].vecTxSSIn)
             txNew.vin.push_back(txssin);
     }
 
@@ -682,9 +683,9 @@ void CSandstormPool::ChargeFees()
     std::vector<CTransaction> vecOffendersCollaterals;
 
     if(nState == POOL_STATE_ACCEPTING_ENTRIES) {
-        BOOST_FOREACH(const CTransaction& txCollateral, vecSessionCollaterals) {
+        for (const CTransaction& txCollateral : vecSessionCollaterals) {
             bool fFound = false;
-            BOOST_FOREACH(const CSandStormEntry& entry, vecEntries)
+            for (const CSandStormEntry& entry : vecEntries)
                 if(entry.txCollateral == txCollateral)
                     fFound = true;
 
@@ -698,8 +699,8 @@ void CSandstormPool::ChargeFees()
 
     if(nState == POOL_STATE_SIGNING) {
         // who didn't sign?
-        BOOST_FOREACH(const CSandStormEntry entry, vecEntries) {
-            BOOST_FOREACH(const CTxSSIn txssin, entry.vecTxSSIn) {
+        for (const CSandStormEntry entry : vecEntries) {
+            for (const CTxSSIn txssin : entry.vecTxSSIn) {
                 if(!txssin.fHasSig) {
                     LogPrintf("CSandstormPool::ChargeFees -- found uncooperative node (didn't sign), found offence\n");
                     vecOffendersCollaterals.push_back(entry.txCollateral);
@@ -755,7 +756,7 @@ void CSandstormPool::ChargeRandomFees()
 
     LOCK(cs_main);
 
-    BOOST_FOREACH(const CTransaction& txCollateral, vecSessionCollaterals) {
+    for (const CTransaction& txCollateral : vecSessionCollaterals) {
 
         if(GetRandInt(100) > 10) return;
 
@@ -781,14 +782,14 @@ void CSandstormPool::CheckTimeout()
         TRY_LOCK(cs_sandstorm, lockSS);
         if(!lockSS) return; // it's ok to fail here, we run this quite frequently
 
-       int c = 0;
-       vector<CSandstormQueue>::iterator it = vecSandstormQueue.begin();
-       while(it != vecSandstormQueue.end()){
-           if((*it).IsExpired()){
-               LogPrint("privatesend", "CSandstormPool::CheckTimeout() : Removing expired queue entry - %d\n", c);
-               it = vecSandstormQueue.erase(it);
-           } else ++it;
-           c++;
+        int c = 0;
+        vector<CSandstormQueue>::iterator it = vecSandstormQueue.begin();
+        while(it != vecSandstormQueue.end()){
+            if((*it).IsExpired()){
+                LogPrint("privatesend", "CSandstormPool::CheckTimeout() : Removing expired queue entry - %d\n", c);
+                it = vecSandstormQueue.erase(it);
+             } else ++it;
+             c++;
        }
     }
 
@@ -855,12 +856,12 @@ bool CSandstormPool::IsInputScriptSigValid(const CTxIn& txin)
     int nTxInIndex = -1;
     CScript sigPubKey = CScript();
 
-    BOOST_FOREACH(CSandStormEntry& entry, vecEntries) {
+    for (CSandStormEntry& entry : vecEntries) {
 
-        BOOST_FOREACH(const CTxSSOut& txssout, entry.vecTxSSOut)
+        for (const CTxSSOut& txssout : entry.vecTxSSOut)
             txNew.vout.push_back(txssout);
 
-        BOOST_FOREACH(const CTxSSIn& txssin, entry.vecTxSSIn) {
+        for (const CTxSSIn& txssin : entry.vecTxSSIn) {
             txNew.vin.push_back(txssin);
 
             if(txssin.prevout == txin.prevout) {
@@ -897,7 +898,7 @@ bool CSandstormPool::IsCollateralValid(const CTransaction& txCollateral)
     CAmount nValueOut = 0;
     bool fMissingTx = false;
 
-    BOOST_FOREACH(const CTxOut txout, txCollateral.vout) {
+    for (const CTxOut txout : txCollateral.vout) {
         nValueOut += txout.nValue;
 
         if(!txout.scriptPubKey.IsNormalPaymentScript()) {
@@ -906,7 +907,7 @@ bool CSandstormPool::IsCollateralValid(const CTransaction& txCollateral)
         }
     }
 
-    BOOST_FOREACH(const CTxIn txin, txCollateral.vin) {
+    for (const CTxIn txin : txCollateral.vin) {
         CTransaction txPrev;
         uint256 hash;
         if(GetTransaction(txin.prevout.hash, txPrev, Params().GetConsensus(), hash, true)) {
@@ -950,7 +951,7 @@ bool CSandstormPool::AddEntry(const CSandStormEntry& entryNew, PoolMessage& nMes
 {
     if(!fStormNode) return false;
 
-    BOOST_FOREACH(CTxIn txin, entryNew.vecTxSSIn) {
+    for (CTxIn txin : entryNew.vecTxSSIn) {
         if(txin.prevout.IsNull()) {
             LogPrint("privatesend", "CSandstormPool::AddEntry -- input not valid!\n");
             nMessageIDRet = ERR_INVALID_INPUT;
@@ -970,10 +971,10 @@ bool CSandstormPool::AddEntry(const CSandStormEntry& entryNew, PoolMessage& nMes
         return false;
     }
 
-    BOOST_FOREACH(CTxIn txin, entryNew.vecTxSSIn) {
+    for (CTxIn txin : entryNew.vecTxSSIn) {
         LogPrint("privatesend", "looking for txin -- %s\n", txin.ToString());
-        BOOST_FOREACH(const CSandStormEntry& entry, vecEntries) {
-            BOOST_FOREACH(const CTxSSIn& txssin, entry.vecTxSSIn) {
+        for (const CSandStormEntry& entry : vecEntries) {
+            for (const CTxSSIn& txssin : entry.vecTxSSIn) {
                 if(txssin.prevout == txin.prevout) {
                     LogPrint("privatesend", "CSandstormPool::AddEntry -- found in txin\n");
                     nMessageIDRet = ERR_ALREADY_HAVE;
@@ -996,8 +997,8 @@ bool CSandstormPool::AddScriptSig(const CTxIn& txinNew)
 {
     LogPrint("privatesend", "CSandstormPool::AddScriptSig -- scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
 
-    BOOST_FOREACH(const CSandStormEntry& entry, vecEntries) {
-        BOOST_FOREACH(const CTxSSIn& txssin, entry.vecTxSSIn) {
+    for (const CSandStormEntry& entry : vecEntries) {
+        for (const CTxSSIn& txssin : entry.vecTxSSIn) {
             if(txssin.scriptSig == txinNew.scriptSig) {
                 LogPrint("privatesend", "CSandstormPool::AddScriptSig -- already exists\n");
                 return false;
@@ -1012,7 +1013,7 @@ bool CSandstormPool::AddScriptSig(const CTxIn& txinNew)
 
     LogPrint("privatesend", "CSandstormPool::AddScriptSig -- scriptSig=%s new\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
 
-    BOOST_FOREACH(CTxIn& txin, finalMutableTransaction.vin) {
+    for (CTxIn& txin : finalMutableTransaction.vin) {
         if(txinNew.prevout == txin.prevout && txin.nSequence == txinNew.nSequence) {
             txin.scriptSig = txinNew.scriptSig;
             txin.prevPubKey = txinNew.prevPubKey;
@@ -1033,8 +1034,8 @@ bool CSandstormPool::AddScriptSig(const CTxIn& txinNew)
 // Check to make sure everything is signed
 bool CSandstormPool::IsSignaturesComplete()
 {
-    BOOST_FOREACH(const CSandStormEntry& entry, vecEntries)
-        BOOST_FOREACH(const CTxSSIn& txssin, entry.vecTxSSIn)
+    for (const CSandStormEntry& entry : vecEntries)
+        for (const CTxSSIn& txssin : entry.vecTxSSIn)
             if(!txssin.fHasSig) return false;
 
     return true;
@@ -1057,10 +1058,10 @@ bool CSandstormPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std
     }
 
     // lock the funds we're going to use
-    BOOST_FOREACH(CTxIn txin, txMyCollateral.vin)
+    for (CTxIn txin : txMyCollateral.vin)
         vecOutPointLocked.push_back(txin.prevout);
 
-    BOOST_FOREACH(CTxIn txin, vecTxIn)
+    for (CTxIn txin : vecTxIn)
         vecOutPointLocked.push_back(txin.prevout);
 
     // we should already be connected to a Stormnode
@@ -1089,12 +1090,12 @@ bool CSandstormPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std
         CValidationState validationState;
         CMutableTransaction tx;
 
-        BOOST_FOREACH(const CTxIn& txin, vecTxIn) {
+        for (const CTxIn& txin : vecTxIn) {
             LogPrint("privatesend", "CSandstormPool::SendDenominate -- txin=%s\n", txin.ToString());
             tx.vin.push_back(txin);
         }
 
-        BOOST_FOREACH(const CTxOut& txout, vecTxOut) {
+        for (const CTxOut& txout : vecTxOut) {
             LogPrint("privatesend", "CSandstormPool::SendDenominate -- txout=%s\n", txout.ToString());
             tx.vout.push_back(txout);
         }
@@ -1176,8 +1177,8 @@ bool CSandstormPool::SignFinalTransaction(const CTransaction& finalTransactionNe
     std::vector<CTxIn> sigs;
 
     //make sure my inputs/outputs are present, otherwise refuse to sign
-    BOOST_FOREACH(const CSandStormEntry entry, vecEntries) {
-        BOOST_FOREACH(const CTxSSIn txssin, entry.vecTxSSIn) {
+    for (const CSandStormEntry entry : vecEntries) {
+        for (const CTxSSIn txssin : entry.vecTxSSIn) {
             /* Sign my transaction and all outputs */
             int nMyInputIndex = -1;
             CScript prevPubKey = CScript();
@@ -1197,7 +1198,7 @@ bool CSandstormPool::SignFinalTransaction(const CTransaction& finalTransactionNe
                 CAmount nValue2 = 0;
 
                 for(unsigned int i = 0; i < finalMutableTransaction.vout.size(); i++) {
-                    BOOST_FOREACH(const CTxOut& txout, entry.vecTxSSOut) {
+                    for (const CTxOut& txout : entry.vecTxSSOut) {
                         if(finalMutableTransaction.vout[i] == txout) {
                             nFoundOutputsCount++;
                             nValue1 += finalMutableTransaction.vout[i].nValue;
@@ -1205,7 +1206,7 @@ bool CSandstormPool::SignFinalTransaction(const CTransaction& finalTransactionNe
                     }
                 }
 
-                BOOST_FOREACH(const CTxOut txout, entry.vecTxSSOut)
+                for (const CTxOut txout : entry.vecTxSSOut)
                     nValue2 += txout.nValue;
 
                 int nTargetOuputsCount = entry.vecTxSSOut.size();
@@ -1508,7 +1509,7 @@ bool CSandstormPool::DoAutomaticDenominating(bool fDryRun)
     if(nLiquidityProvider || fUseQueue) {
 
         // Look through the queues and see if anything matches
-        BOOST_FOREACH(CSandstormQueue& ssq, vecSandstormQueue) {
+        for (CSandstormQueue& ssq : vecSandstormQueue) {
             // only try each queue once
             if(ssq.fTried) continue;
             ssq.fTried = true;
@@ -1684,7 +1685,7 @@ bool CSandstormPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::stri
 
     {
         LOCK(pwalletMain->cs_wallet);
-        BOOST_FOREACH(CTxIn txin, vecTxIn) {
+        for (CTxIn txin : vecTxIn) {
             pwalletMain->LockCoin(txin.prevout);
         }
     }
@@ -1703,7 +1704,7 @@ bool CSandstormPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::stri
     }
 
     while (nStep < nStepsMax) {
-        BOOST_FOREACH(int nBit, vecBits) {
+        for (int nBit : vecBits) {
             CAmount nValueDenom = vecPrivateSendDenominations[nBit];
             if (nValueLeft - nValueDenom < 0) continue;
 
@@ -1747,7 +1748,7 @@ bool CSandstormPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::stri
     {
         // unlock unused coins
         LOCK(pwalletMain->cs_wallet);
-        BOOST_FOREACH(CTxIn txin, vecTxIn) {
+        for (CTxIn txin : vecTxIn) {
             pwalletMain->UnlockCoin(txin.prevout);
         }
     }
@@ -1755,7 +1756,7 @@ bool CSandstormPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::stri
     if (GetDenominations(vecTxOutRet) != nSessionDenom) {
         // unlock used coins on failure
         LOCK(pwalletMain->cs_wallet);
-        BOOST_FOREACH(CTxIn txin, vecTxInRet) {
+        for (CTxIn txin : vecTxInRet) {
             pwalletMain->UnlockCoin(txin.prevout);
         }
         strErrorRet = "Can't make current denominated outputs";
@@ -1775,7 +1776,7 @@ bool CSandstormPool::MakeCollateralAmounts()
         return false;
     }
 
-    BOOST_FOREACH(CompactTallyItem& item, vecTally) {
+    for (CompactTallyItem& item : vecTally) {
         if(!MakeCollateralAmounts(item)) continue;
         return true;
     }
@@ -1811,7 +1812,7 @@ bool CSandstormPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
     coinControl.fAllowWatchOnly = false;
     // send change to the same address so that we were able create more denoms out of it later
     coinControl.destChange = tallyItem.address.Get();
-    BOOST_FOREACH(const CTxIn& txin, tallyItem.vecTxIn)
+    for (const CTxIn& txin : tallyItem.vecTxIn)
         coinControl.Select(txin.prevout);
 
     bool fSuccess = pwalletMain->CreateTransaction(vecSend, wtx, reservekeyChange,
@@ -1856,7 +1857,7 @@ bool CSandstormPool::CreateDenominated()
 
     bool fCreateMixingCollaterals = !pwalletMain->HasCollateralInputs();
 
-    BOOST_FOREACH(CompactTallyItem& item, vecTally) {
+    for (CompactTallyItem& item : vecTally) {
         if(!CreateDenominated(item, fCreateMixingCollaterals)) continue;
         return true;
     }
@@ -1898,7 +1899,7 @@ bool CSandstormPool::CreateDenominated(const CompactTallyItem& tallyItem, bool f
     bool fSkip = true;
     do {
 
-        BOOST_REVERSE_FOREACH(CAmount nDenomValue, vecPrivateSendDenominations) {
+        for (CAmount nDenomValue : boost::adaptors::reverse(vecPrivateSendDenominations)) {
 
             if(fSkip) {
                 // Note: denoms are skipped if there are already DENOMS_COUNT_MAX of them
@@ -1952,7 +1953,7 @@ bool CSandstormPool::CreateDenominated(const CompactTallyItem& tallyItem, bool f
     coinControl.fAllowWatchOnly = false;
     // send change to the same address so that we were able create more denoms out of it later
     coinControl.destChange = tallyItem.address.Get();
-    BOOST_FOREACH(const CTxIn& txin, tallyItem.vecTxIn)
+    for (const CTxIn& txin : tallyItem.vecTxIn)
         coinControl.Select(txin.prevout);
 
     CWalletTx wtx;
@@ -1990,7 +1991,7 @@ bool CSandstormPool::IsOutputsCompatibleWithSessionDenom(const std::vector<CTxSS
 {
     if(GetDenominations(vecTxSSOut) == 0) return false;
 
-    BOOST_FOREACH(const CSandStormEntry entry, vecEntries) {
+    for (const CSandStormEntry entry : vecEntries) {
         LogPrintf("CSandstormPool::IsOutputsCompatibleWithSessionDenom -- vecTxSSOut denom %d, entry.vecTxSSOut denom %d\n", GetDenominations(vecTxSSOut), GetDenominations(entry.vecTxSSOut));
         if(GetDenominations(vecTxSSOut) != GetDenominations(entry.vecTxSSOut)) return false;
     }
@@ -2129,7 +2130,7 @@ int CSandstormPool::GetDenominations(const std::vector<CTxSSOut>& vecTxSSOut)
 {
     std::vector<CTxOut> vecTxOut;
 
-    BOOST_FOREACH(CTxSSOut out, vecTxSSOut)
+    for (CTxSSOut out : vecTxSSOut)
         vecTxOut.push_back(out);
 
     return GetDenominations(vecTxOut);
@@ -2149,11 +2150,11 @@ int CSandstormPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool f
     std::vector<std::pair<CAmount, int> > vecDenomUsed;
 
     // make a list of denominations, with zero uses
-    BOOST_FOREACH(CAmount nDenomValue, vecPrivateSendDenominations)
+    for (CAmount nDenomValue : vecPrivateSendDenominations)
         vecDenomUsed.push_back(std::make_pair(nDenomValue, 0));
 
     // look for denominations and update uses to 1
-    BOOST_FOREACH(CTxOut txout, vecTxOut) {
+    for (CTxOut txout : vecTxOut) {
         bool found = false;
         for (std::pair<CAmount, int>& s : vecDenomUsed) {
             if(txout.nValue == s.first) {
@@ -2204,7 +2205,7 @@ int CSandstormPool::GetDenominationsByAmounts(const std::vector<CAmount>& vecAmo
     CScript scriptTmp = CScript();
     std::vector<CTxOut> vecTxOut;
 
-    BOOST_REVERSE_FOREACH(CAmount nAmount, vecAmount) {
+    for (CAmount nAmount : boost::adaptors::reverse(vecAmount)) {
         CTxOut txout(nAmount, scriptTmp);
         vecTxOut.push_back(txout);
     }
@@ -2249,7 +2250,7 @@ bool CSandStormSigner::IsVinAssociatedWithPubkey(const CTxIn& txin, const CPubKe
     CTransaction tx;
     uint256 hash;
     if(GetTransaction(txin.prevout.hash, tx, Params().GetConsensus(), hash, true)) {
-        BOOST_FOREACH(CTxOut out, tx.vout)
+        for (CTxOut out : tx.vout)
             if(out.nValue == 1000*COIN && out.scriptPubKey == payee) return true;
     }
 
@@ -2301,7 +2302,7 @@ bool CSandStormSigner::VerifyMessage(CPubKey pubkey, const std::vector<unsigned 
 
 bool CSandStormEntry::AddScriptSig(const CTxIn& txin)
 {
-    BOOST_FOREACH(CTxSSIn& txssin, vecTxSSIn) {
+    for (CTxSSIn& txssin : vecTxSSIn) {
         if(txssin.prevout == txin.prevout && txssin.nSequence == txin.nSequence) {
             if(txssin.fHasSig) return false;
 
@@ -2349,15 +2350,15 @@ bool CSandstormQueue::Relay()
     {
         LOCK(cs_vNodes);
         vNodesCopy = vNodes;
-        BOOST_FOREACH(CNode* pnode, vNodesCopy)
+        for (CNode* pnode : vNodesCopy)
             pnode->AddRef();
     }
-    BOOST_FOREACH(CNode* pnode, vNodesCopy)
+    for (CNode* pnode : vNodesCopy)
         if(pnode->nVersion >= MIN_PRIVATESEND_PEER_PROTO_VERSION)
             pnode->PushMessage(NetMsgType::SSQUEUE, (*this));
     {
         LOCK(cs_vNodes);
-        BOOST_FOREACH(CNode* pnode, vNodesCopy)
+        for (CNode* pnode : vNodesCopy)
             pnode->Release();
     }
     return true;
@@ -2393,7 +2394,7 @@ bool CSandstormBroadcastTx::CheckSignature(const CPubKey& pubKeyStormnode)
 void CSandstormPool::RelayFinalTransaction(const CTransaction& txFinal)
 {
     LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodes)
+    for (CNode* pnode : vNodes)
         if(pnode->nVersion >= MIN_PRIVATESEND_PEER_PROTO_VERSION)
             pnode->PushMessage(NetMsgType::SSFINALTX, nSessionID, txFinal);
 }
@@ -2418,7 +2419,7 @@ void CSandstormPool::PushStatus(CNode* pnode, PoolStatusUpdate nStatusUpdate, Po
 void CSandstormPool::RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID)
 {
     LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodes)
+    for (CNode* pnode : vNodes)
         if(pnode->nVersion >= MIN_PRIVATESEND_PEER_PROTO_VERSION)
             PushStatus(pnode, nStatusUpdate, nMessageID);
 }
@@ -2426,7 +2427,7 @@ void CSandstormPool::RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMe
 void CSandstormPool::RelayCompletedTransaction(PoolMessage nMessageID)
 {
     LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodes)
+    for (CNode* pnode : vNodes)
         if(pnode->nVersion >= MIN_PRIVATESEND_PEER_PROTO_VERSION)
             pnode->PushMessage(NetMsgType::SSCOMPLETE, nSessionID, (int)nMessageID);
 }

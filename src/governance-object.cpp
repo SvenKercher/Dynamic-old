@@ -536,7 +536,7 @@ bool CGovernanceObject::IsCollateralValid(std::string& strError)
 
 
     bool foundOpReturn = false;
-    BOOST_FOREACH(const CTxOut o, txCollateral.vout) {
+    for (const CTxOut o : txCollateral.vout) {
         DBG( cout << "IsCollateralValid txout : " << o.ToString()
              << ", o.nValue = " << o.nValue
              << ", o.scriptPubKey = " << ScriptToAsmStr( o.scriptPubKey, false )

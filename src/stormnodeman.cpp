@@ -156,7 +156,7 @@ void CStormnodeMan::Check()
 
     LogPrint("stormnode", "CStormnodeMan::Check nLastWatchdogVoteTime = %d, IsWatchdogActive() = %d\n", nLastWatchdogVoteTime, IsWatchdogActive());
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         sn.Check();
     }
 }
@@ -299,7 +299,7 @@ int CStormnodeMan::CountStormnodes(int nProtocolVersion)
     int nCount = 0;
     nProtocolVersion = nProtocolVersion == -1 ? snpayments.GetMinStormnodePaymentsProto() : nProtocolVersion;
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         if(sn.nProtocolVersion < nProtocolVersion) continue;
         nCount++;
     }
@@ -313,7 +313,7 @@ int CStormnodeMan::CountEnabled(int nProtocolVersion)
     int nCount = 0;
     nProtocolVersion = nProtocolVersion == -1 ? snpayments.GetMinStormnodePaymentsProto() : nProtocolVersion;
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         if(sn.nProtocolVersion < nProtocolVersion || !sn.IsEnabled()) continue;
         nCount++;
     }
@@ -327,7 +327,7 @@ int CStormnodeMan::CountByIP(int nNetworkType)
     LOCK(cs);
     int nNodeCount = 0;
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes)
+    for (CStormnode& sn : vStormnodes)
         if ((nNetworkType == NET_IPV4 && sn.addr.IsIPv4()) ||
             (nNetworkType == NET_TOR  && sn.addr.IsTor())  ||
             (nNetworkType == NET_IPV6 && sn.addr.IsIPv6())) {
@@ -363,7 +363,7 @@ CStormnode* CStormnodeMan::Find(const CScript &payee)
 {
     LOCK(cs);
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes)
+    for (CStormnode& sn : vStormnodes)
     {
         if(GetScriptForDestination(sn.pubKeyCollateralAddress.GetID()) == payee)
             return &sn;
@@ -375,7 +375,7 @@ CStormnode* CStormnodeMan::Find(const CTxIn &vin)
 {
     LOCK(cs);
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes)
+    for (CStormnode& sn : vStormnodes)
     {
         if(sn.vin.prevout == vin.prevout)
             return &sn;
@@ -387,7 +387,7 @@ CStormnode* CStormnodeMan::Find(const CPubKey &pubKeyStormnode)
 {
     LOCK(cs);
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes)
+    for (CStormnode& sn : vStormnodes)
     {
         if(sn.pubKeyStormnode == pubKeyStormnode)
             return &sn;
@@ -475,7 +475,7 @@ CStormnode* CStormnodeMan::GetNextStormnodeInQueueForPayment(int nBlockHeight, b
     */
 
     int nSnCount = CountEnabled();
-    BOOST_FOREACH(CStormnode &sn, vStormnodes)
+    for (CStormnode &sn : vStormnodes)
     {
         if(!sn.IsValidForPayment()) continue;
 
@@ -540,7 +540,7 @@ CStormnode* CStormnodeMan::FindRandomNotInVec(const std::vector<CTxIn> &vecToExc
 
     // fill a vector of pointers
     std::vector<CStormnode*> vpStormnodesShuffled;
-    BOOST_FOREACH(CStormnode &sn, vStormnodes) {
+    for (CStormnode &sn : vStormnodes) {
         vpStormnodesShuffled.push_back(&sn);
     }
 
@@ -551,10 +551,10 @@ CStormnode* CStormnodeMan::FindRandomNotInVec(const std::vector<CTxIn> &vecToExc
     bool fExclude;
 
     // loop through
-    BOOST_FOREACH(CStormnode* psn, vpStormnodesShuffled) {
+    for (CStormnode* psn : vpStormnodesShuffled) {
         if(psn->nProtocolVersion < nProtocolVersion || !psn->IsEnabled()) continue;
         fExclude = false;
-        BOOST_FOREACH(const CTxIn &txinToExclude, vecToExclude) {
+        for (const CTxIn &txinToExclude : vecToExclude) {
             if(psn->vin.prevout == txinToExclude.prevout) {
                 fExclude = true;
                 break;
@@ -581,7 +581,7 @@ int CStormnodeMan::GetStormnodeRank(const CTxIn& vin, int nBlockHeight, int nMin
     LOCK(cs);
 
     // scan for winner
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         if(sn.nProtocolVersion < nMinProtocol) continue;
         if(fOnlyActive) {
             if(!sn.IsEnabled()) continue;
@@ -617,7 +617,7 @@ std::vector<std::pair<int, CStormnode> > CStormnodeMan::GetStormnodeRanks(int nB
     LOCK(cs);
 
     // scan for winner
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
 
         if(sn.nProtocolVersion < nMinProtocol || !sn.IsEnabled()) continue;
 
@@ -650,7 +650,7 @@ CStormnode* CStormnodeMan::GetStormnodeByRank(int nRank, int nBlockHeight, int n
     }
 
     // Fill scores
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
 
         if(sn.nProtocolVersion < nMinProtocol) continue;
         if(fOnlyActive && !sn.IsEnabled()) continue;
@@ -679,7 +679,7 @@ void CStormnodeMan::ProcessStormnodeConnections()
     if(Params().NetworkIDString() == CBaseChainParams::REGTEST) return;
 
     LOCK(cs_vNodes);
-    BOOST_FOREACH(CNode* pnode, vNodes) {
+    for (CNode* pnode : vNodes) {
         if(pnode->fStormnode) {
             if(sandStormPool.pSubmittedToStormnode != NULL && pnode->addr == sandStormPool.pSubmittedToStormnode->addr) continue;
             LogPrintf("Closing Stormnode connection: peer=%d, addr=%s\n", pnode->id, pnode->addr.ToString());
@@ -777,7 +777,7 @@ void CStormnodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
 
         int nInvCount = 0;
 
-        BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+        for (CStormnode& sn : vStormnodes) {
             if (vin != CTxIn() && vin != sn.vin) continue; // asked for specific vin but we are not there yet
             if (sn.addr.IsRFC1918() || sn.addr.IsLocal()) continue; // do not send local network stormnode
 
@@ -870,7 +870,7 @@ void CStormnodeMan::DoFullVerificationStep()
     if(nOffset >= (int)vecStormnodeRanks.size()) return;
 
     std::vector<CStormnode*> vSortedByAddr;
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         vSortedByAddr.push_back(&sn);
     }
 
@@ -917,13 +917,13 @@ void CStormnodeMan::CheckSameAddr()
         CStormnode* pprevStormnode = NULL;
         CStormnode* pverifiedStormnode = NULL;
 
-        BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+        for (CStormnode& sn : vStormnodes) {
             vSortedByAddr.push_back(&sn);
         }
 
         sort(vSortedByAddr.begin(), vSortedByAddr.end(), CompareByAddr());
 
-        BOOST_FOREACH(CStormnode* psn, vSortedByAddr) {
+        for (CStormnode* psn : vSortedByAddr) {
             // check only (pre)enabled stormnodes
             if(!psn->IsEnabled() && !psn->IsPreEnabled()) continue;
             // initial step
@@ -951,7 +951,7 @@ void CStormnodeMan::CheckSameAddr()
     }
 
     // ban duplicates
-    BOOST_FOREACH(CStormnode* psn, vBan) {
+    for (CStormnode* psn : vBan) {
         LogPrintf("CStormnodeMan::CheckSameAddr -- increasing PoSe ban score for stormnode %s\n", psn->vin.prevout.ToStringShort());
         psn->IncreasePoSeBanScore();
     }
@@ -966,6 +966,7 @@ bool CStormnodeMan::SendVerifyRequest(const CAddress& addr, const std::vector<CS
     }
 
     CNode* pnode = ConnectNode(addr, NULL, true);
+
     if(pnode == NULL) {
         LogPrintf("CStormnodeMan::SendVerifyRequest -- can't connect to node to verify it, addr=%s\n", addr.ToString());
         return false;
@@ -1120,7 +1121,7 @@ void CStormnodeMan::ProcessVerifyReply(CNode* pnode, CStormnodeVerification& snv
         LogPrintf("CStormnodeMan::ProcessVerifyReply -- verified real stormnode %s for addr %s\n",
                     prealStormnode->vin.prevout.ToStringShort(), pnode->addr.ToString());
         // increase ban score for everyone else
-        BOOST_FOREACH(CStormnode* psn, vpStormnodesToBan) {
+        for (CStormnode* psn : vpStormnodesToBan) {
             psn->IncreasePoSeBanScore();
             LogPrint("stormnode", "CStormnodeMan::ProcessVerifyBroadcast -- increased PoSe ban score for %s addr %s, new score %d\n",
                         prealStormnode->vin.prevout.ToStringShort(), pnode->addr.ToString(), psn->nPoSeBanScore);
@@ -1214,7 +1215,7 @@ void CStormnodeMan::ProcessVerifyBroadcast(CNode* pnode, const CStormnodeVerific
 
         // increase ban score for everyone else with the same addr
         int nCount = 0;
-        BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+        for (CStormnode& sn : vStormnodes) {
             if(sn.addr != snv.addr || sn.vin.prevout == snv.vin1.prevout) continue;
             sn.IncreasePoSeBanScore();
             nCount++;
@@ -1350,7 +1351,7 @@ void CStormnodeMan::UpdateLastPaid()
 
     // pCurrentBlockIndex->nHeight, nMaxBlocksToScanBack, IsFirstRun ? "true" : "false");
 
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         sn.UpdateLastPaid(pCurrentBlockIndex, nMaxBlocksToScanBack);
     }
 
@@ -1415,7 +1416,7 @@ void CStormnodeMan::AddGovernanceVote(const CTxIn& vin, uint256 nGovernanceObjec
 void CStormnodeMan::RemoveGovernanceObject(uint256 nGovernanceObjectHash)
 {
     LOCK(cs);
-    BOOST_FOREACH(CStormnode& sn, vStormnodes) {
+    for (CStormnode& sn : vStormnodes) {
         sn.RemoveGovernanceObject(nGovernanceObjectHash);
     }
 }

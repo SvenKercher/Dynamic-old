@@ -371,7 +371,7 @@ void CStormnode::UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToScanB
 
             CAmount nStormnodePayment = STATIC_STORMNODE_PAYMENT;
 
-            BOOST_FOREACH(CTxOut txout, block.vtx[0].vout)
+            for (CTxOut txout : block.vtx[0].vout)
                 if(snpayee == txout.scriptPubKey && nStormnodePayment == txout.nValue) {
                     nBlockLastPaid = BlockReading->nHeight;
                     nTimeLastPaid = BlockReading->nTime;
