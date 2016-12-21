@@ -20,12 +20,6 @@
 #include "consensus/header_verify.h"
 #include "hash.h"
 #include "init.h"
-#include "instantx.h"
-#include "sandstorm.h"
-#include "governance.h"
-#include "stormnode-payments.h"
-#include "stormnode-sync.h"
-#include "stormnodeman.h"
 #include "merkleblock.h"
 #include "net.h"
 #include "policy/policy.h"
@@ -46,6 +40,13 @@
 #include "utilstrencodings.h"
 #include "validationinterface.h"
 #include "versionbits.h"
+
+#include "sandstorm.h"
+#include "governance.h"
+#include "instantx.h"
+#include "stormnode-payments.h"
+#include "stormnode-sync.h"
+#include "stormnodeman.h"
 
 #include <sstream>
 
@@ -1572,7 +1573,7 @@ bool IsInitialBlockDownload()
     const CChainParams& chainParams = Params();
     if (fCheckpointsEnabled && chainActive.Height() < Checkpoints::GetTotalBlocksEstimate(chainParams.Checkpoints()))
         return true;
-    bool state = (chainActive.Height() < pindexBestHeader->nHeight - 24 * 6 ||
+    bool state = (chainActive.Height() < pindexBestHeader->nHeight ||
             std::max(chainActive.Tip()->GetBlockTime(), pindexBestHeader->GetBlockTime()) < GetTime() - chainParams.MaxTipAge());
     if (!state)
         lockIBDState = true;
