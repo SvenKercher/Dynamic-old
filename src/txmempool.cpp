@@ -10,6 +10,7 @@
 #include "clientversion.h"
 #include "consensus/consensus.h"
 #include "consensus/validation.h"
+#include "consensus/tx_verify.h"
 #include "main.h"
 #include "policy/fees.h"
 #include "streams.h"

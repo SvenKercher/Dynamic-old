@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "consensus/validation.h"
+#include "consensus/tx_verify.h"
 #include "data/sighash.json.h"
 #include "hash.h"
 #include "main.h" // For CheckTransaction

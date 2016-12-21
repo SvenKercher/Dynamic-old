@@ -3,25 +3,17 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "core_io.h"
-#include "main.h"
-#include "init.h"
-
-#include "flat-database.h"
+#include "sandstorm.h"
 #include "governance.h"
 #include "governance-vote.h"
 #include "governance-classes.h"
+#include "main.h"
 #include "stormnode.h"
 #include "governance.h"
-#include "governance-object.h"
-#include "sandstorm.h"
-#include "stormnodeman.h"
 #include "stormnode-sync.h"
+#include "stormnodeman.h"
 #include "netfulfilledman.h"
 #include "util.h"
-#include "addrman.h"
-#include <boost/lexical_cast.hpp>
-#include <univalue.h>
 
 CGovernanceManager governance;
 
@@ -172,7 +164,8 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
             return;
         }
 
-        if(!StormnodeRateCheck(govobj, true)) {
+        bool fRateCheckBypassed = false;
+        if(!StormnodeRateCheck(govobj, true, false, fRateCheckBypassed)) {
             LogPrintf("SNGOVERNANCEOBJECT -- stormnode rate check failed - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
             return;
         }
@@ -194,9 +187,16 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
             return;
         }
 
+        if(fRateCheckBypassed) {
+            if(!StormnodeRateCheck(govobj, true, true, fRateCheckBypassed)) {
+                LogPrintf("SNGOVERNANCEOBJECT -- stormnode rate check failed (after signature verification) - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
+                return;
+            }
+        }
+
         // UPDATE CACHED VARIABLES FOR THIS OBJECT AND ADD IT TO OUR MANANGED DATA
 
-        govobj.UpdateSentinelVariables(pCurrentBlockIndex); //this sets local vars in object
+        govobj.UpdateSentinelVariables(); //this sets local vars in object
 
         if(AddGovernanceObject(govobj))
         {
@@ -305,6 +305,8 @@ bool CGovernanceManager::AddGovernanceObject(CGovernanceObject& govobj)
         return false;
     }
 
+    LogPrint("gobject", "CGovernanceManager::AddGovernanceObject -- Adding object: hash = %s, type = %d\n", nHash.ToString(), govobj.GetObjectType()); 
+
     // INSERT INTO OUR GOVERNANCE OBJECT MEMORY
     mapObjects.insert(std::make_pair(govobj.GetHash(), govobj));
 
@@ -323,6 +325,7 @@ bool CGovernanceManager::AddGovernanceObject(CGovernanceObject& govobj)
         break;
     case GOVERNANCE_OBJECT_WATCHDOG:
         mapWatchdogObjects[nHash] = GetAdjustedTime() + GOVERNANCE_WATCHDOG_EXPIRATION_TIME;
+        LogPrint("gobject", "CGovernanceManager::AddGovernanceObject -- Added watchdog to map: hash = %s\n", nHash.ToString()); 
         break;
     default:
         break;
@@ -343,14 +346,20 @@ void CGovernanceManager::UpdateCachesAndClean()
 
     // Flag expired watchdogs for removal
     int64_t nNow = GetAdjustedTime();
+    LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean -- Number watchdogs in map: %d, current time = %d\n", mapWatchdogObjects.size(), nNow);
     if(mapWatchdogObjects.size() > 1) {
         hash_time_m_it it = mapWatchdogObjects.begin();
         while(it != mapWatchdogObjects.end()) {
+            LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean -- Checking watchdog: %s, expiration time = %d\n", it->first.ToString(), it->second);
             if(it->second < nNow) {
+                LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean -- Attempting to expire watchdog: %s, expiration time = %d\n", it->first.ToString(), it->second);
                 object_m_it it2 = mapObjects.find(it->first);
                 if(it2 != mapObjects.end()) {
+                    LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean -- Expiring watchdog: %s, expiration time = %d\n", it->first.ToString(), it->second);
                     it2->second.fExpired = true;
-                    it2->second.nDeletionTime = nNow;
+                    if(it2->second.nDeletionTime == 0) {
+                        it2->second.nDeletionTime = nNow;
+                    }
                 }
                 mapWatchdogObjects.erase(it++);
             }
@@ -393,17 +402,23 @@ void CGovernanceManager::UpdateCachesAndClean()
             continue;
         }
 
+        std::string strHash = pObj->GetHash().ToString();
+
         // IF CACHE IS NOT DIRTY, WHY DO THIS?
         if(pObj->IsSetDirtyCache()) {
             // UPDATE LOCAL VALIDITY AGAINST CRYPTO DATA
             pObj->UpdateLocalValidity(pCurrentBlockIndex);
 
             // UPDATE SENTINEL SIGNALING VARIABLES
-            pObj->UpdateSentinelVariables(pCurrentBlockIndex);
+            pObj->UpdateSentinelVariables();
         }
 
         // IF DELETE=TRUE, THEN CLEAN THE MESS UP!
         int64_t nTimeSinceDeletion = GetAdjustedTime() - pObj->GetDeletionTime();
+
+        LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean -- Checking object for deletion: %s, deletion time = %d, time since deletion = %d, delete flag = %d, expired flag = %d\n",
+                 strHash, pObj->GetDeletionTime(), nTimeSinceDeletion, pObj->IsSetCachedDelete(), pObj->IsSetExpired());
+
         if((pObj->IsSetCachedDelete() || pObj->IsSetExpired()) &&
            (nTimeSinceDeletion >= GOVERNANCE_DELETION_DELAY)) {
             LogPrintf("CGovernanceManager::UpdateCachesAndClean -- erase obj %s\n", (*it).first.ToString());
@@ -688,7 +703,15 @@ void CGovernanceManager::Sync(CNode* pfrom, uint256 nProp)
 
 bool CGovernanceManager::StormnodeRateCheck(const CGovernanceObject& govobj, bool fUpdateLast)
 {
+    bool fRateCheckBypassed = false;
+    return StormnodeRateCheck(govobj, fUpdateLast, true, fRateCheckBypassed);
+}
+
+bool CGovernanceManager::StormnodeRateCheck(const CGovernanceObject& govobj, bool fUpdateLast, bool fForce, bool& fRateCheckBypassed)
+{
     LOCK(cs);
+
+    fRateCheckBypassed = false;
 
     if(!stormnodeSync.IsSynced()) {
         return true;
@@ -703,19 +726,23 @@ bool CGovernanceManager::StormnodeRateCheck(const CGovernanceObject& govobj, boo
         return true;
     }
 
+    int64_t nTimestamp = govobj.GetCreationTime();
+    int64_t nNow = GetTime();
+    int64_t nSuperblockCycleSeconds = Params().GetConsensus().nSuperblockCycle * Params().GetConsensus().nPowTargetSpacing;
+
     const CTxIn& vin = govobj.GetStormnodeVin();
 
     txout_m_it it  = mapLastStormnodeObject.find(vin.prevout);
 
     if(it == mapLastStormnodeObject.end()) {
         if(fUpdateLast) {
-            it = mapLastStormnodeObject.insert(txout_m_t::value_type(vin.prevout, last_object_rec(0, 0))).first;
+            it = mapLastStormnodeObject.insert(txout_m_t::value_type(vin.prevout, last_object_rec(true))).first;
             switch(nObjectType) {
             case GOVERNANCE_OBJECT_TRIGGER:
-                it->second.nLastTriggerBlockHeight = nCachedBlockHeight;
+                it->second.triggerBuffer.AddTimestamp(nTimestamp);
                 break;
             case GOVERNANCE_OBJECT_WATCHDOG:
-                it->second.nLastWatchdogBlockHeight = nCachedBlockHeight;
+                it->second.watchdogBuffer.AddTimestamp(nTimestamp);
                 break;
             default:
                 break;
@@ -724,34 +751,64 @@ bool CGovernanceManager::StormnodeRateCheck(const CGovernanceObject& govobj, boo
         return true;
     }
 
-    int nMinDiff = 0;
-    int nObjectBlock = 0;
-    switch(nObjectType) {
+    if(it->second.fStatusOK && !fForce) {
+        fRateCheckBypassed = true;
+        return true;
+    }
+
+    std::string strHash = govobj.GetHash().ToString();
+
+    if(nTimestamp < nNow - 2 * nSuperblockCycleSeconds) {
+        LogPrintf("CGovernanceManager::StormnodeRateCheck -- object %s rejected due to too old timestamp, stormnode vin = %s, timestamp = %d, current time = %d\n",
+                 strHash, vin.prevout.ToStringShort(), nTimestamp, nNow);
+        return false;
+    }
+
+    if(nTimestamp > nNow + 60*60) {
+        LogPrintf("CGovernanceManager::StormnodeRateCheck -- object %s rejected due to too new (future) timestamp, stormnode vin = %s, timestamp = %d, current time = %d\n",
+                 strHash, vin.prevout.ToStringShort(), nTimestamp, nNow);
+        return false;
+    }
+
+    double dMaxRate = 2 * 1.1 / double(nSuperblockCycleSeconds);
+    double dRate = 0.0;
+    CRateCheckBuffer buffer;    switch(nObjectType) {
     case GOVERNANCE_OBJECT_TRIGGER:
         // Allow 1 trigger per mn per cycle, with a small fudge factor
-        nMinDiff = Params().GetConsensus().nSuperblockCycle - Params().GetConsensus().nSuperblockCycle / 10;
-        nObjectBlock = it->second.nLastTriggerBlockHeight;
-        if(fUpdateLast) {
-            it->second.nLastTriggerBlockHeight = nCachedBlockHeight;
+        dMaxRate = 1.1 / nSuperblockCycleSeconds;
+        buffer = it->second.triggerBuffer;
+        buffer.AddTimestamp(nTimestamp);
+        dRate = buffer.GetRate();        if(fUpdateLast) {
+            it->second.triggerBuffer.AddTimestamp(nTimestamp);
         }
         break;
     case GOVERNANCE_OBJECT_WATCHDOG:
-        nMinDiff = 1;
-        nObjectBlock = it->second.nLastWatchdogBlockHeight;
+        dMaxRate = 2 * 1.1 / 3600.;
+        buffer = it->second.watchdogBuffer;
+        buffer.AddTimestamp(nTimestamp);
+        dRate = buffer.GetRate();
         if(fUpdateLast) {
-            it->second.nLastWatchdogBlockHeight = nCachedBlockHeight;
+            it->second.watchdogBuffer.AddTimestamp(nTimestamp);
         } 
         break;
     default:
         break;
     }
 
-    if((nCachedBlockHeight - nObjectBlock) > nMinDiff) {
+    if(dRate < dMaxRate) {
+        if(fUpdateLast) {
+            it->second.fStatusOK = true;
+        }
         return true;
     }
+    else {
+        if(fUpdateLast) {
+            it->second.fStatusOK = false;
+        }
+    }
 
-    LogPrintf("CGovernanceManager::StormnodeRateCheck -- Rate too high: vin = %s, current height = %d, last SN height = %d, minimum difference = %d\n",
-              vin.prevout.ToStringShort(), nCachedBlockHeight, nObjectBlock, nMinDiff);
+    LogPrintf("CGovernanceManager::StormnodeRateCheck -- Rate too high: object hash = %s, stormnode vin = %s, object timestamp = %d, rate = %f, max rate = %f\n",
+              strHash, vin.prevout.ToStringShort(), nTimestamp, dRate, dMaxRate);
     return false;
 }
 
@@ -839,6 +896,7 @@ void CGovernanceManager::CheckStormnodeOrphanObjects()
 
         if(AddGovernanceObject(govobj)) {
             LogPrintf("CGovernanceManager::CheckStormnodeOrphanObjects -- %s new\n", govobj.GetHash().ToString());
+            govobj.Relay();
             mapStormnodeOrphanObjects.erase(it++);
         }
         else {
@@ -940,13 +998,37 @@ void CGovernanceManager::InitOnLoad()
 
 std::string CGovernanceManager::ToString() const
 {
-    std::ostringstream info;
+    LOCK(cs);
 
-    info << "Governance Objects: " << (int)mapObjects.size() <<
-            " (Seen: " << (int)mapSeenGovernanceObjects.size() <<
-            "), Vote Count: " << (int)mapVoteToObject.GetSize();
+    int nProposalCount = 0;
+    int nTriggerCount = 0;
+    int nWatchdogCount = 0;
+    int nOtherCount = 0;
 
-    return info.str();
+    object_m_cit it = mapObjects.begin();
+
+    while(it != mapObjects.end()) {
+        switch(it->second.GetObjectType()) {
+            case GOVERNANCE_OBJECT_PROPOSAL:
+                nProposalCount++;
+                break;
+            case GOVERNANCE_OBJECT_TRIGGER:
+                nTriggerCount++;
+                break;
+            case GOVERNANCE_OBJECT_WATCHDOG:
+                nWatchdogCount++;
+                break;
+            default:
+                nOtherCount++;
+                break;
+        }
+        ++it;
+    }
+
+    return strprintf("Governance Objects: %d (Proposals: %d, Triggers: %d, Watchdogs: %d, Other: %d; Seen: %d), Votes: %d",
+                    (int)mapObjects.size(),
+                    nProposalCount, nTriggerCount, nWatchdogCount, nOtherCount, (int)mapSeenGovernanceObjects.size(),
+                    (int)mapVoteToObject.GetSize());
 }
 
 void CGovernanceManager::UpdatedBlockTip(const CBlockIndex *pindex)

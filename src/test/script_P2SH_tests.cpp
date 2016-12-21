@@ -10,6 +10,7 @@
 #include "script/script_error.h"
 #include "script/sign.h"
 #include "test/test_darksilk.h"
+#include "consensus/tx_verify.h"
 
 #ifdef ENABLE_WALLET
 #include "wallet/wallet_ismine.h"

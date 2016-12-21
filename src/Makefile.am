@@ -65,6 +65,7 @@ endif
 .PHONY: FORCE check-symbols check-security
 # darksilk core #
 DARKSILK_CORE_H = \
+  addrdb.h \
   activestormnode.h \
   addressindex.h \
   spentindex.h \
@@ -94,6 +95,8 @@ DARKSILK_CORE_H = \
   consensus/merkle.h \
   consensus/params.h \
   consensus/validation.h \
+  consensus/tx_verify.h \
+  consensus/header_verify.h \
   core_io.h \
   core_memusage.h \
   sandstorm.h \
@@ -126,6 +129,8 @@ DARKSILK_CORE_H = \
   merkleblock.h \
   miner.h \
   net.h \
+  netaddress.h \
+  netmessagemaker.h \
   netbase.h \
   netfulfilledman.h \
   noui.h \
@@ -195,11 +200,14 @@ libdarksilk_util_a-clientversion.$(OBJEXT): obj/build.h
 libdarksilk_server_a_CPPFLAGS = $(AM_CPPFLAGS) $(DARKSILK_INCLUDES) $(MINIUPNPC_CPPFLAGS) $(EVENT_CFLAGS) $(EVENT_PTHREADS_CFLAGS)
 libdarksilk_server_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libdarksilk_server_a_SOURCES = \
+  addrdb.cpp \
   addrman.cpp \
   alert.cpp \
   bloom.cpp \
   chain.cpp \
   checkpoints.cpp \
+  consensus/tx_verify.cpp \
+  consensus/header_verify.cpp \
   httprpc.cpp \
   httpserver.cpp \
   init.cpp \
@@ -213,6 +221,7 @@ libdarksilk_server_a_SOURCES = \
   merkleblock.cpp \
   miner.cpp \
   net.cpp \
+  netaddress.cpp \
   netfulfilledman.cpp \
   noui.cpp \
   policy/fees.cpp \

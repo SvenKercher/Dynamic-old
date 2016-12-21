@@ -7,6 +7,7 @@
 #include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
+#include "consensus/tx_verify.h"
 #include "main.h"
 #include "stormnode-payments.h"
 #include "miner.h"

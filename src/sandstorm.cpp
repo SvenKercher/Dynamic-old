@@ -782,16 +782,15 @@ void CSandstormPool::CheckTimeout()
         TRY_LOCK(cs_sandstorm, lockSS);
         if(!lockSS) return; // it's ok to fail here, we run this quite frequently
 
-		int c = 0;
-		vector<CSandstormQueue>::iterator it = vecSandstormQueue.begin();
-		while(it != vecSandstormQueue.end()){
-			if((*it).IsExpired()){
-				LogPrint("darksend", "CSandstormPool::CheckTimeout() : Removing expired queue entry - %d\n", c);
-				it = vecSandstormQueue.erase(it);
-			} else ++it;
-			c++;
-		}
-
+        int c = 0;
+        vector<CSandstormQueue>::iterator it = vecSandstormQueue.begin();
+        while(it != vecSandstormQueue.end()){
+            if((*it).IsExpired()){
+                LogPrint("privatesend", "CSandstormPool::CheckTimeout() : Removing expired queue entry - %d\n", c);
+                it = vecSandstormQueue.erase(it);
+             } else ++it;
+             c++;
+       }
     }
 
     if(!fEnablePrivateSend && !fStormNode) return;
@@ -1561,7 +1560,6 @@ bool CSandstormPool::DoAutomaticDenominating(bool fDryRun)
             } else {
                 LogPrintf("CSandstormPool::DoAutomaticDenominating -- can't connect, addr=%s\n", psn->addr.ToString());
                 strAutoDenomResult = _("Error connecting to Stormnode.");
-                psn->IncreasePoSeBanScore();
                 continue;
             }
         }
@@ -1614,7 +1612,6 @@ bool CSandstormPool::DoAutomaticDenominating(bool fDryRun)
         } else {
             LogPrintf("CSandstormPool::DoAutomaticDenominating -- can't connect, addr=%s\n", psn->addr.ToString());
             nTries++;
-            psn->IncreasePoSeBanScore();
             continue;
         }
     }
@@ -2483,8 +2480,8 @@ void ThreadCheckSandStormPool()
             nTick++;
 
             // check if we should activate or ping every few minutes,
-            // start right after sync is considered to be done
-            if(nTick % STORMNODE_MIN_SNP_SECONDS == 1)
+            // slightly postpone first run to give net thread a chance to connect to some peers
+            if(nTick % STORMNODE_MIN_SNP_SECONDS == 15)
                 activeStormnode.ManageState();
 
             snodeman.Check();

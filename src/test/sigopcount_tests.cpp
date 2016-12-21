@@ -9,6 +9,8 @@
 #include "uint256.h"
 #include "test/test_darksilk.h"
 
+#include "consensus/tx_verify.h"
+
 #include <vector>
 
 #include <boost/foreach.hpp>

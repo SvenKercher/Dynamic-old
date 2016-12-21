@@ -14,6 +14,7 @@
 #include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
+#include "consensus/tx_verify.h"
 #include "wallet/wallet.h"
 #include "hash.h"
 #include "main.h"
