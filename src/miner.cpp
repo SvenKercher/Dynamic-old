@@ -538,7 +538,7 @@ void static DarkSilkMiner(const CChainParams& chainparams)
             throw std::runtime_error("No coinbase script available (mining requires a wallet)");
 
         while (true) {
-            /*if (chainparams.MiningRequiresPeers()) {
+            if (chainparams.MiningRequiresPeers()) {
                 // Busy-wait for the network to come online so we don't waste time mining
                 // on an obsolete chain. In regtest mode we expect to fly solo.
                 do {
@@ -547,11 +547,11 @@ void static DarkSilkMiner(const CChainParams& chainparams)
                         LOCK(cs_vNodes);
                         fvNodesEmpty = vNodes.empty();
                     }
-                   //  if (!fvNodesEmpty && !IsInitialBlockDownload())
-                   //     break;
-                   // MilliSleep(1000);
+                    if (!fvNodesEmpty && !IsInitialBlockDownload())
+                        break;
+                    MilliSleep(1000);
                 } while (true);
-            }*/
+            }
 
 
             //

@@ -149,7 +149,7 @@ public:
         pchMessageStart[3] = 0x31;
         vAlertPubKey = ParseHex(""); //TODO: Add alert key before release.
         nDefaultPort = 31000;
-        nMaxTipAge = 30 * 64;
+        nMaxTipAge = 24 * 60 * 64;
         nPruneAfterHeight = 10000;
         startNewChain = false;
 
@@ -185,7 +185,7 @@ public:
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
-        fMineBlocksOnDemand = false;
+        fMineBlocksOnDemand = true; // This is only temporary
         fTestnetToBeDeprecatedFieldRPC = false;
 
         nPoolMaxTransactions = 3;
