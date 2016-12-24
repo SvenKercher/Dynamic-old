@@ -1,9 +1,9 @@
 PACKAGE=qt
-$(package)_version=5.5.0
-$(package)_download_path=http://download.qt.io/official_releases/qt/5.5/$($(package)_version)/submodules
+$(package)_version=5.6.1
+$(package)_download_path=http://download.qt.io/official_releases/qt/5.6/$($(package)_version)/submodules
 $(package)_suffix=opensource-src-$($(package)_version).tar.gz
 $(package)_file_name=qtbase-$($(package)_suffix)
-$(package)_sha256_hash=7e82b1318f88e56a2a9376e069aa608d4fd96b48cb0e1b880ae658b0a1af0561
+$(package)_sha256_hash=0ac67cf8d66d52b995f96c31c4b48117a1afb3db99eaa93e20ccd8f7f55f7fde
 $(package)_dependencies=openssl
 $(package)_linux_dependencies=freetype fontconfig dbus libxcb libX11 xproto libXext
 $(package)_build_subdir=qtbase
@@ -11,10 +11,10 @@ $(package)_qt_libs=corelib network widgets gui plugins testlib
 $(package)_patches=mac-qmake.conf fix-xcb-include-order.patch mingw-uuidof.patch pidlist_absolute.patch
 
 $(package)_qttranslations_file_name=qttranslations-$($(package)_suffix)
-$(package)_qttranslations_sha256_hash=c4bd6db6e426965c6f8824c54e81f68bbd61e2bae1bcadc328c6e81c45902a0d
+$(package)_qttranslations_sha256_hash=dcc1534d247babca1840cb6d0a000671801a341ea352d0535474f86adadaf028
 
 $(package)_qttools_file_name=qttools-$($(package)_suffix)
-$(package)_qttools_sha256_hash=d9e06bd19ecc86afba5e95d45a906d1bc1ad579aa70001e36143c1aaf695bdd6
+$(package)_qttools_sha256_hash=e0f845de28c31230dfa428f0190ccb3b91d1fc02481b1f064698ae4ef8376aa1
 
 $(package)_extra_sources  = $($(package)_qttranslations_file_name)
 $(package)_extra_sources += $($(package)_qttools_file_name)
