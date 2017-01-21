@@ -34,6 +34,7 @@
 #include "instantx.h"
 #include "keepass.h"
 #include "spork.h"
+#include "dns/dns.h"
 
 #include <assert.h>
 
@@ -55,7 +56,7 @@ const char * DEFAULT_WALLET_DAT = "wallet.dat";
 
 const uint32_t BIP32_HARDENED_KEY_LIMIT = 0x80000000;
 
-/** 
+/**
  * Fees smaller than this (in duffs) are considered zero fee (for transaction creation)
  * Override with -mintxfee
  */
@@ -523,21 +524,21 @@ bool CWallet::Verify()
         } catch (const boost::filesystem::filesystem_error&) {
             // failure is ok (well, not really, but it's not worse than what we started with)
         }
-        
+
         // try again
         if (!bitdb.Open(GetDataDir())) {
             // if it still fails, it probably means we can't even create the database env
             return InitError(strprintf(_("Error initializing wallet database environment %s!"), GetDataDir()));
         }
     }
-    
+
     if (GetBoolArg("-salvagewallet", false))
     {
         // Recover readable keypairs:
         if (!CWalletDB::Recover(bitdb, walletFile, true))
             return false;
     }
-    
+
     if (boost::filesystem::exists(GetDataDir() / walletFile))
     {
         CDBEnv::VerifyResult r = bitdb.Verify(walletFile, CWalletDB::Recover);
@@ -552,7 +553,7 @@ bool CWallet::Verify()
         if (r == CDBEnv::RECOVER_FAIL)
             return InitError(strprintf(_("%s corrupt, salvage failed"), walletFile));
     }
-    
+
     return true;
 }
 
@@ -2329,9 +2330,9 @@ static void ApproximateBestSubset(vector<pair<CAmount, pair<const CWalletTx*,uns
         }
     }
 
-    //Reduces the approximate best subset by removing any inputs that are smaller than the surplus of nTotal beyond nTargetValue. 
+    //Reduces the approximate best subset by removing any inputs that are smaller than the surplus of nTotal beyond nTargetValue.
     for (unsigned int i = 0; i < vValue.size(); i++)
-    {                        
+    {
         if (vfBest[i] && (nBest - vValue[i].first) >= nTargetValue )
         {
             vfBest[i] = false;
@@ -3053,6 +3054,15 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
         return false;
     }
 
+    // DarkSilk: define some values used in case of namecoin tx creation
+    CAmount nNameTxInCredit = 0;
+    unsigned int nNameTxOut = 0;
+    if (!wtxNew.IsNull())
+    {
+        nNameTxOut = IndexOfNameOutput(wtxNew);
+        nNameTxInCredit = wtxNew.vout[nNameTxOut].nValue;
+    }
+
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;
@@ -3103,7 +3113,8 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 wtxNew.fFromMe = true;
                 nChangePosRet = -1;
                 bool fFirst = true;
-
+                
+                CAmount nTotalValue = nValue + nFeeRet;
                 CAmount nValueToSelect = nValue;
                 if (nSubtractFeeFromAmount == 0)
                     nValueToSelect += nFeeRet;
@@ -3143,27 +3154,46 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 // Choose coins to use
                 set<pair<const CWalletTx*,unsigned int> > setCoins;
                 CAmount nValueIn = 0;
-
-                if (!SelectCoins(nValueToSelect, setCoins, nValueIn, coinControl, nCoinType, fUseInstantSend))
+                // DarkSilk: ddns tx already have inputs.
+                bool fwalletTxNull = wtxNew.IsNull();
+                if (!fwalletTxNull)
                 {
-                    if (nCoinType == ALL_COINS) {
-                        strFailReason = _("Insufficient funds.");
-                    } else if (nCoinType == ONLY_NOT1000IFSN) {
-                        strFailReason = _("Unable to locate enough funds for this transaction that are not equal 1000 DSLK.");
-                    } else if (nCoinType == ONLY_NONDENOMINATED_NOT1000IFSN) {
-                        strFailReason = _("Unable to locate enough PrivateSend non-denominated funds for this transaction that are not equal 1000 DSLK.");
-                    } else {
-                        strFailReason = _("Unable to locate enough PrivateSend denominated funds for this transaction.");
-                        strFailReason += " " + _("PrivateSend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.");
+                    if ( (nTotalValue - nNameTxInCredit > 0 || (coinControl && coinControl->HasSelected()))
+                        && !SelectCoins(nTotalValue - nNameTxInCredit, setCoins, nValueIn, coinControl, nCoinType, false) )
+                    {
+                        strFailReason = _("Insufficient funds");
+                        return false;
                     }
-
-                    if(fUseInstantSend){
-                        strFailReason += " " + _("InstantSend requires inputs with at least 10 confirmations, you might need to wait a few minutes and try again.");
-                    }
-
-                    return false;
                 }
+                // Other tx proceed as we normaly would in DarkSilk
+                else
+                {
+                    if (!SelectCoins(nValueToSelect, setCoins, nValueIn, coinControl, nCoinType, fUseInstantSend))
+                    {
+                        if (nCoinType == ALL_COINS) {
+                            strFailReason = _("Insufficient funds.");
+                        } else if (nCoinType == ONLY_NOT1000IFSN) {
+                            strFailReason = _("Unable to locate enough funds for this transaction that are not equal 1000 DSLK.");
+                        } else if (nCoinType == ONLY_NONDENOMINATED_NOT1000IFSN) {
+                            strFailReason = _("Unable to locate enough PrivateSend non-denominated funds for this transaction that are not equal 1000 DSLK.");
+                        } else {
+                            strFailReason = _("Unable to locate enough PrivateSend denominated funds for this transaction.");
+                            strFailReason += " " + _("PrivateSend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.");
+                        }
 
+                        if(fUseInstantSend){
+                            strFailReason += " " + _("InstantSend requires inputs with at least 10 confirmations, you might need to wait a few minutes and try again.");
+                        }
+
+                        return false;
+                    }
+                }
+                // DarkSilk: ddns tx always at first position
+                if (!wtxNew.IsNull())
+                {
+                    setCoins.insert(setCoins.begin(), make_pair(&wtxNew, nNameTxOut));
+                    nValueIn += nNameTxInCredit;
+                }
 
                 BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
                 {
@@ -3296,16 +3326,28 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 // Sign
                 int nIn = 0;
                 CTransaction txNewConst(txNew);
-                BOOST_FOREACH(const CTxIn& txin, txNew.vin)
+                BOOST_FOREACH(const PAIRTYPE(const CWalletTx*,unsigned int)& coin, setCoins)
                 {
                     bool signSuccess;
-                    const CScript& scriptPubKey = txin.prevPubKey;
+                    const CScript& scriptPubKey = txNew.vin[nIn].prevPubKey;
                     CScript& scriptSigRes = txNew.vin[nIn].scriptSig;
-                    if (sign)
-                        signSuccess = ProduceSignature(TransactionSignatureCreator(this, &txNewConst, nIn, SIGHASH_ALL), scriptPubKey, scriptSigRes);
+                    if (coin.first == &wtxNew && coin.second == nNameTxOut)
+                    {
+                        // DarkSilk: we sign ddns tx differently.
+                        signSuccess = SignNameSignature(*this, *coin.first, txNew, nIn++);
+                        if (!signSuccess)
+                        {
+                            strFailReason = _("Signing transaction failed");
+                            return false;
+                        }
+                    }
                     else
-                        signSuccess = ProduceSignature(DummySignatureCreator(this), scriptPubKey, scriptSigRes);
-
+                    {
+                        if (sign)
+                            signSuccess = ProduceSignature(TransactionSignatureCreator(this, &txNewConst, nIn, SIGHASH_ALL), scriptPubKey, scriptSigRes);
+                        else
+                            signSuccess = ProduceSignature(DummySignatureCreator(this), scriptPubKey, scriptSigRes);
+                    }
                     if (!signSuccess)
                     {
                         strFailReason = _("Signing transaction failed");
@@ -3344,8 +3386,8 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                         break;
 
                     // Small enough, and priority high enough, to send for free
-//                    if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
-//                        break;
+                    //if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
+                    //  break;
                 }
                 CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(nBytes, nTxConfirmTarget, mempool));
                 if (coinControl && nFeeNeeded > 0 && coinControl->nMinimumTotalFee > nFeeNeeded) {
@@ -3585,7 +3627,7 @@ bool CWallet::SetDefaultKey(const CPubKey &vchPubKey)
 
 /**
  * Mark old keypool keys as used,
- * and generate all new keys 
+ * and generate all new keys
  */
 bool CWallet::NewKeyPool()
 {

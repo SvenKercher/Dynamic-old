@@ -1227,8 +1227,9 @@ NameTxReturn name_operation(const int op, const CNameVal& name, CNameVal value, 
         CAmount minAmount = MIN_TXOUT_AMOUNT;
         if (op == OP_NAME_MULTISIG)
             minAmount = (CAmount)(MIN_TXOUT_AMOUNT/10);
-
-        SendName(nameScript, minAmount, wtx, wtxIn, nameFee);
+        bool fwalletTxNull = wtxIn.IsNull();
+        if (!fwalletTxNull)
+            SendName(nameScript, minAmount, wtx, wtxIn, nameFee);
     }
 
     //success! collect info and return
