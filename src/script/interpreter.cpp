@@ -1339,6 +1339,7 @@ bool checkNameValues(NameTxInfo& ret)
 
 bool AddressMatchesPubKey(const CNameVal& name, const CNameVal& value, std::string& strError)
 {
+    //TODO (Amir): refactor so it doesn't cause linker error.
     /*std::string strAddress = stringFromNameVal(name);
 
     if (strAddress.size() >= 8)

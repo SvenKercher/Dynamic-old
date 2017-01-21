@@ -13,6 +13,7 @@
 #include "coincontrol.h"
 #include "consensus/consensus.h"
 #include "consensus/validation.h"
+#include "dns/dns.h"
 #include "init.h"
 #include "key.h"
 #include "keystore.h"
@@ -3053,6 +3054,15 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
         return false;
     }
 
+    // DarkSilk: define some values used in case of namecoin tx creation
+    CAmount nNameTxInCredit = 0;
+    unsigned int nNameTxOut = 0;
+    if (!wtxNew.IsNull())
+    {
+        nNameTxOut = IndexOfNameOutput(wtxNew);
+        nNameTxInCredit = wtxNew.vout[nNameTxOut].nValue;
+    }
+
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.BindWallet(this);
     CMutableTransaction txNew;
@@ -3104,6 +3114,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 nChangePosRet = -1;
                 bool fFirst = true;
 
+                CAmount nTotalValue = nValue + nFeeRet;
                 CAmount nValueToSelect = nValue;
                 if (nSubtractFeeFromAmount == 0)
                     nValueToSelect += nFeeRet;
@@ -3144,8 +3155,21 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 set<pair<const CWalletTx*,unsigned int> > setCoins;
                 CAmount nValueIn = 0;
 
-                if (!SelectCoins(nValueToSelect, setCoins, nValueIn, coinControl, nCoinType, fUseInstantSend))
+                // DarkSilk: in case of ddns tx we have already supplied input.
+                // If we have enough money: skip coin selection, unless we have ordered it with coinControl.
+                if (!wtxNew.IsNull())
                 {
+                    if ( (nTotalValue - nNameTxInCredit > 0 || (coinControl && coinControl->HasSelected()))
+                        && !SelectCoins(nTotalValue - nNameTxInCredit, setCoins, nValueIn, coinControl, nCoinType, false) )
+                    {
+                        strFailReason = _("Insufficient funds");
+                        return false;
+                    }
+                }
+                // otherwise proceed as we normaly would in DarkSilk
+                else if (!SelectCoins(nValueToSelect, setCoins, nValueIn, coinControl, nCoinType, fUseInstantSend))
+                {
+                   
                     if (nCoinType == ALL_COINS) {
                         strFailReason = _("Insufficient funds.");
                     } else if (nCoinType == ONLY_NOT1000IFSN) {
@@ -3164,6 +3188,12 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                     return false;
                 }
 
+                // DarkSilk: name tx always at first position
+                if (!wtxNew.IsNull())
+                {
+                    setCoins.insert(setCoins.begin(), make_pair(&wtxNew, nNameTxOut));
+                    nValueIn += nNameTxInCredit;
+                }
 
                 BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
                 {
@@ -3296,22 +3326,34 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                 // Sign
                 int nIn = 0;
                 CTransaction txNewConst(txNew);
-                BOOST_FOREACH(const CTxIn& txin, txNew.vin)
+                BOOST_FOREACH(const PAIRTYPE(const CWalletTx*,unsigned int)& coin, setCoins)
                 {
-                    bool signSuccess;
-                    const CScript& scriptPubKey = txin.prevPubKey;
-                    CScript& scriptSigRes = txNew.vin[nIn].scriptSig;
-                    if (sign)
-                        signSuccess = ProduceSignature(TransactionSignatureCreator(this, &txNewConst, nIn, SIGHASH_ALL), scriptPubKey, scriptSigRes);
-                    else
-                        signSuccess = ProduceSignature(DummySignatureCreator(this), scriptPubKey, scriptSigRes);
-
-                    if (!signSuccess)
+                    // DarkSilk: we sign name tx differently.
+                    if (coin.first == &wtxNew && coin.second == nNameTxOut)
                     {
-                        strFailReason = _("Signing transaction failed");
-                        return false;
+                        if (!SignNameSignature(*this, *coin.first, txNew, nIn++))
+                        {
+                            strFailReason = _("Signing transaction failed");
+                            return false;
+                        }
                     }
-                    nIn++;
+                    else 
+                    {
+                        bool signSuccess;
+                        const CScript& scriptPubKey = txNew.vin[nIn].prevPubKey;
+                        CScript& scriptSigRes = txNew.vin[nIn].scriptSig;
+                        if (sign)
+                            signSuccess = ProduceSignature(TransactionSignatureCreator(this, &txNewConst, nIn, SIGHASH_ALL), scriptPubKey, scriptSigRes);
+                        else
+                            signSuccess = ProduceSignature(DummySignatureCreator(this), scriptPubKey, scriptSigRes);
+
+                        if (!signSuccess)
+                        {
+                            strFailReason = _("Signing transaction failed");
+                            return false;
+                        }
+                        nIn++;
+                    }
                 }
 
                 unsigned int nBytes = ::GetSerializeSize(txNew, SER_NETWORK, PROTOCOL_VERSION);
