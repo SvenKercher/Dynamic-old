@@ -153,13 +153,13 @@ public:
         nPruneAfterHeight = 10000;
         startNewChain = false;
 
-        genesis = CreateGenesisBlock(1482780545, 19143, UintToArith256(consensus.powLimit).GetCompact(), 1, (1 * COIN));
+        genesis = CreateGenesisBlock(1485041524, 139759, UintToArith256(consensus.powLimit).GetCompact(), 1, (1 * COIN));
         if(startNewChain == true) { MineGenesis(genesis, consensus.powLimit, true); }
 
         consensus.hashGenesisBlock = genesis.GetHash();
 
         if(!startNewChain)
-			assert(consensus.hashGenesisBlock == uint256S("0x0000e5a948c5faaf47c3d6893f4a3ed0628f2cee7161979a03b2c08a5ea8723a"));
+			assert(consensus.hashGenesisBlock == uint256S("0x0000a6e7697091221eb6f1e686daf5ae09b44ce4806e362666bf9fec3819cab8"));
 			assert(genesis.hashMerkleRoot == uint256S("0x519b329dfc272ac355f0c254df4c5a4abd4cf535cc2b3dc88f0432f6e73fc815"));
 
         //vSeeds.push_back(CDNSSeedData("", ""));
