@@ -27,6 +27,7 @@ packages:
 - "python-dev"
 - "python-setuptools"
 - "fonts-tuffy"
+- "gobjc++"
 remotes:
 - "url": "https://github.com/silknetwork/darksilk-core.git"
   "dir": "darksilk"
