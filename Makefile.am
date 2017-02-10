@@ -15,6 +15,7 @@ DARKSILK_CLI_BIN=$(top_builddir)/src/darksilk-cli$(EXEEXT)
 DARKSILK_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
 OSX_APP=DarkSilk-Qt.app
+OSX_VOLNAME = $(subst $(space),-,$(PACKAGE_NAME))
 OSX_DMG=DarkSilk-Core.dmg
 OSX_BACKGROUND_IMAGE=background.tiff
 OSX_DEPLOY_SCRIPT=$(top_srcdir)/contrib/macdeploy/macdeployqtplus
