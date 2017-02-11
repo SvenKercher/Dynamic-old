@@ -129,7 +129,7 @@ script: |
     make ${MAKEOPTS}
     make install-strip DESTDIR=${INSTALLPATH}
 
-    #make osx_volname
+    make osx_volname
     make deploydir
     OSX_VOLNAME="$(cat osx_volname)"
     mkdir -p unsigned-app-${i}
