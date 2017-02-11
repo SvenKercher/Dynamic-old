@@ -14,9 +14,9 @@ DARKSILK_QT_BIN=$(top_builddir)/src/qt/darksilk-qt$(EXEEXT)
 DARKSILK_CLI_BIN=$(top_builddir)/src/darksilk-cli$(EXEEXT)
 DARKSILK_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
-OSX_APP=DarkSilk-Qt.app
-OSX_VOLNAME=DarkSilk-Core
-OSX_DMG=DarkSilk-Core.dmg
+OSX_APP=Bitcoin-Qt.app
+OSX_VOLNAME = $(subst $(space),-,$(PACKAGE_NAME))
+OSX_DMG = $(OSX_VOLNAME).dmg
 OSX_BACKGROUND_IMAGE=background.tiff
 OSX_DEPLOY_SCRIPT=$(top_srcdir)/contrib/macdeploy/macdeployqtplus
 OSX_FANCY_PLIST=$(top_srcdir)/contrib/macdeploy/fancy.plist
