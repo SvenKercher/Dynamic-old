@@ -14,6 +14,9 @@ DARKSILK_QT_BIN=$(top_builddir)/src/qt/darksilk-qt$(EXEEXT)
 DARKSILK_CLI_BIN=$(top_builddir)/src/darksilk-cli$(EXEEXT)
 DARKSILK_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
+empty :=
+space := $(empty) $(empty)
+
 OSX_APP=Bitcoin-Qt.app
 OSX_VOLNAME = $(subst $(space),-,$(PACKAGE_NAME))
 OSX_DMG = $(OSX_VOLNAME).dmg
@@ -98,6 +101,9 @@ $(OSX_APP)/Contents/Resources/Base.lproj/InfoPlist.strings: $(OSX_BASE_LPROJ_DIR
 OSX_APP_BUILT=$(OSX_APP)/Contents/PkgInfo $(OSX_APP)/Contents/Resources/empty.lproj \
   $(OSX_APP)/Contents/Resources/darksilk.icns $(OSX_APP)/Contents/Info.plist \
   $(OSX_APP)/Contents/MacOS/DarkSilk-Qt $(OSX_APP)/Contents/Resources/Base.lproj/InfoPlist.strings
+
+osx_volname:
+	echo $(OSX_VOLNAME) >$@
 
 if BUILD_DARWIN
 $(OSX_DMG): $(OSX_APP_BUILT) $(OSX_PACKAGING)
