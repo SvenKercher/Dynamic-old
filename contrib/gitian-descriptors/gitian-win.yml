@@ -145,6 +145,7 @@ script: |
     make ${MAKEOPTS}
     make ${MAKEOPTS} -C src check-security
     #make deploy
+    cp ${BASEPREFIX}/${i}/src/*.exe ${OUTDIR} && cp ${BASEPREFIX}/${i}/src/qt/*.exe ${OUTDIR} 
     make install DESTDIR=${INSTALLPATH}
     #cp -f darksilk-*setup*.exe $OUTDIR/
     cd installed
