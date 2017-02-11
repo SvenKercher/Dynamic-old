@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef DARKSILK_ZMQ_ZMQABSTRACTNOTIFIER_H
-#define DARKSILK_ZMQ_ZMQABSTRACTNOTIFIER_H
+#ifndef BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
+#define BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
 
 #include "zmqconfig.h"
 
@@ -34,7 +34,6 @@ public:
 
     virtual bool NotifyBlock(const CBlockIndex *pindex);
     virtual bool NotifyTransaction(const CTransaction &transaction);
-    virtual bool NotifyTransactionLock(const CTransaction &transaction);
 
 protected:
     void *psocket;
@@ -42,4 +41,4 @@ protected:
     std::string address;
 };
 
-#endif // DARKSILK_ZMQ_ZMQABSTRACTNOTIFIER_H
+#endif // BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
