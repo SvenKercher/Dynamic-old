@@ -25,11 +25,11 @@ border:0px solid #520072;
 
 QMenuBar {
 background-color:#000000;
-color:#e6e6e6;
 }
 
 QMenuBar::item {
 background-color:#000000;
+color:#e6e6e6;
 }
 
 QMenuBar::item:selected {
@@ -66,13 +66,13 @@ font-weight:bold;
 color:#808080;
 }
 
-QToolBar > QToolButton:checked {
+QToolBar > QToolButton:hover {
 background-color:#771F99;
 color:#ffffff;
 font-weight:bold;
 }
 
-QToolBar > QToolButton:hover {
+QToolBar > QToolButton:checked {
 background-color:#771F99;
 color:#ffffff;
 font-weight:bold;

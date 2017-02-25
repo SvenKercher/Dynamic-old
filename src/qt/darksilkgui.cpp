@@ -7,8 +7,8 @@
 
 #include "darksilkgui.h"
 
-#include "darksilkunits.h"
 #include "clientmodel.h"
+#include "darksilkunits.h"
 #include "guiconstants.h"
 #include "guiutil.h"
 #include "networkstyle.h"
@@ -20,7 +20,6 @@
 #include "rpcconsole.h"
 #include "utilitydialog.h"
 #include "multisigdialog.h"
-
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
 #include "walletmodel.h"
@@ -31,10 +30,10 @@
 #endif
 
 #include "init.h"
-#include "ui_interface.h"
-#include "util.h"
 #include "stormnode-sync.h"
 #include "stormnodelist.h"
+#include "ui_interface.h"
+#include "util.h"
 
 #include <iostream>
 
@@ -160,7 +159,7 @@ DarkSilkGUI::DarkSilkGUI(const PlatformStyle *platformStyle, const NetworkStyle 
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
 
-    rpcConsole = new RPCConsole(platformStyle, 0);
+    rpcConsole = new RPCConsole(enableWallet ? this : 0);
     helpMessageDialog = new HelpMessageDialog(this, HelpMessageDialog::cmdline);
 #ifdef ENABLE_WALLET
     if(enableWallet)
