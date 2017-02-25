@@ -438,7 +438,7 @@ UniValue getwork(const UniValue& params, bool fHelp)
                     delete pblocktemplate;
                 vNewBlockTemplate.clear();
             }
-            
+
             // Clear pindexPrev so future calls make a new block, despite any failures from here on
             pindexPrev = NULL;
 
