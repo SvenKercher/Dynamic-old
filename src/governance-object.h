@@ -181,9 +181,9 @@ private:
     /// Failed to parse object data
     bool fUnparsable;
 
-    vote_m_t mapCurrentSNVotes;
+    vote_m_t mapCurrentDNVotes;
 
-    /// Limited map of votes orphaned by SN
+    /// Limited map of votes orphaned by DN
     vote_mcache_t mapOrphanVotes;
 
     CGovernanceObjectVoteFile fileVotes;
@@ -292,7 +292,7 @@ public:
     int GetNoCount(vote_signal_enum_t eVoteSignalIn) const;
     int GetAbstainCount(vote_signal_enum_t eVoteSignalIn) const;
 
-    bool GetCurrentSNVotes(const CTxIn& snCollateralOutpoint, vote_rec_t& voteRecord);
+    bool GetCurrentDNVotes(const CTxIn& dnCollateralOutpoint, vote_rec_t& voteRecord);
 
     // FUNCTIONS FOR DEALING WITH DATA STRING
 
@@ -321,7 +321,7 @@ public:
             LogPrint("gobject", "CGovernanceObject::SerializationOp Reading/writing votes from/to disk\n");
             READWRITE(nDeletionTime);
             READWRITE(fExpired);
-            READWRITE(mapCurrentSNVotes);
+            READWRITE(mapCurrentDNVotes);
             READWRITE(fileVotes);
             LogPrint("gobject", "CGovernanceObject::SerializationOp hash = %s, vote count = %d\n", GetHash().ToString(), fileVotes.GetVoteCount());
         }
@@ -346,7 +346,7 @@ private:
 
     void RebuildVoteMap();
 
-    /// Called when SN's which have voted on this object have been removed
+    /// Called when DN's which have voted on this object have been removed
     void ClearDynodeVotes();
 
     void CheckOrphanVotes();

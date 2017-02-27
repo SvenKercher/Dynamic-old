@@ -229,10 +229,10 @@ void PrepareShutdown()
     StopNode();
 
     // STORE DATA CACHES INTO SERIALIZED DAT FILES
-    CFlatDB<CDynodeMan> flatdb1("sncache.dat", "magicDynodeCache");
-    flatdb1.Dump(snodeman);
-    CFlatDB<CDynodePayments> flatdb2("snpayments.dat", "magicDynodePaymentsCache");
-    flatdb2.Dump(snpayments);
+    CFlatDB<CDynodeMan> flatdb1("dncache.dat", "magicDynodeCache");
+    flatdb1.Dump(dnodeman);
+    CFlatDB<CDynodePayments> flatdb2("dnpayments.dat", "magicDynodePaymentsCache");
+    flatdb2.Dump(dnpayments);
     CFlatDB<CGovernanceManager> flatdb3("governance.dat", "magicGovernanceCache");
     flatdb3.Dump(governance);
     CFlatDB<CNetFulfilledRequestManager> flatdb4("netfulfilled.dat", "magicFulfilledCache");
@@ -519,7 +519,7 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-limitdescendantsize=<n>", strprintf("Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants (default: %u).", DEFAULT_DESCENDANT_SIZE_LIMIT));
     }
     string debugCategories = "addrman, alert, bench, coindb, db, lock, rand, rpc, selectcoins, mempool, mempoolrej, net, proxy, prune, http, libevent, tor, zmq, "
-                             "Dynamic (or specifically: privatesend, instantsend, dynode, spork, keepass, snpayments, gobject)"; // Don't translate these and qt below
+                             "Dynamic (or specifically: privatesend, instantsend, dynode, spork, keepass, dnpayments, gobject)"; // Don't translate these and qt below
     if (mode == HMM_DYNAMIC_QT)
         debugCategories += ", qt";
     strUsage += HelpMessageOpt("-debug=<category>", strprintf(_("Output debugging information (default: %u, supplying <category> is optional)"), 0) + ". " +
@@ -557,8 +557,8 @@ std::string HelpMessage(HelpMessageMode mode)
 
     strUsage += HelpMessageGroup(_("Dynode options:"));
     strUsage += HelpMessageOpt("-dynode=<n>", strprintf(_("Enable the client to act as a Dynode (0-1, default: %u)"), 0));
-    strUsage += HelpMessageOpt("-snconf=<file>", strprintf(_("Specify Dynode configuration file (default: %s)"), "dynode.conf"));
-    strUsage += HelpMessageOpt("-snconflock=<n>", strprintf(_("Lock Dynodes from Dynode configuration file (default: %u)"), 1));
+    strUsage += HelpMessageOpt("-dnconf=<file>", strprintf(_("Specify Dynode configuration file (default: %s)"), "dynode.conf"));
+    strUsage += HelpMessageOpt("-dnconflock=<n>", strprintf(_("Lock Dynodes from Dynode configuration file (default: %u)"), 1));
     strUsage += HelpMessageOpt("-dynodeprivkey=<n>", _("Set the Dynode private key"));
 
     strUsage += HelpMessageGroup(_("PrivateSend options:"));
@@ -1665,22 +1665,22 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     LogPrintf("Using Dynode config file %s\n", GetDynodeConfigFile().string());
 
-    if(GetBoolArg("-snconflock", true) && pwalletMain && (dynodeConfig.getCount() > 0)) {
+    if(GetBoolArg("-dnconflock", true) && pwalletMain && (dynodeConfig.getCount() > 0)) {
         LOCK(pwalletMain->cs_wallet);
         LogPrintf("Locking Dynodes:\n");
-        uint256 snTxHash;
+        uint256 dnTxHash;
         int outputIndex;
-        BOOST_FOREACH(CDynodeConfig::CDynodeEntry sne, dynodeConfig.getEntries()) {
-            snTxHash.SetHex(sne.getTxHash());
-            outputIndex = boost::lexical_cast<unsigned int>(sne.getOutputIndex());
-            COutPoint outpoint = COutPoint(snTxHash, outputIndex);
+        BOOST_FOREACH(CDynodeConfig::CDynodeEntry dne, dynodeConfig.getEntries()) {
+            dnTxHash.SetHex(dne.getTxHash());
+            outputIndex = boost::lexical_cast<unsigned int>(dne.getOutputIndex());
+            COutPoint outpoint = COutPoint(dnTxHash, outputIndex);
             // don't lock non-spendable outpoint (i.e. it's already spent or it's not from this wallet at all)
             if(pwalletMain->IsMine(CTxIn(outpoint)) != ISMINE_SPENDABLE) {
-                LogPrintf("  %s %s - IS NOT SPENDABLE, was not locked\n", sne.getTxHash(), sne.getOutputIndex());
+                LogPrintf("  %s %s - IS NOT SPENDABLE, was not locked\n", dne.getTxHash(), dne.getOutputIndex());
                 continue;
             }
             pwalletMain->LockCoin(outpoint);
-            LogPrintf("  %s %s - locked successfully\n", sne.getTxHash(), sne.getOutputIndex());
+            LogPrintf("  %s %s - locked successfully\n", dne.getTxHash(), dne.getOutputIndex());
         }
     }
 
@@ -1718,16 +1718,16 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     // LOAD SERIALIZED DAT FILES INTO DATA CACHES FOR INTERNAL USE
 
     uiInterface.InitMessage(_("Loading Dynode cache..."));
-    CFlatDB<CDynodeMan> flatdb1("sncache.dat", "magicDynodeCache");
-    if(!flatdb1.Load(snodeman)) {
-        return InitError("Failed to load Dynode cache from sncache.dat");
+    CFlatDB<CDynodeMan> flatdb1("dncache.dat", "magicDynodeCache");
+    if(!flatdb1.Load(dnodeman)) {
+        return InitError("Failed to load Dynode cache from dncache.dat");
     }
 
-    if(snodeman.size()) {
+    if(dnodeman.size()) {
         uiInterface.InitMessage(_("Loading Dynode payment cache..."));
-        CFlatDB<CDynodePayments> flatdb2("snpayments.dat", "magicDynodePaymentsCache");
-        if(!flatdb2.Load(snpayments)) {
-            return InitError("Failed to load Dynode payments cache from snpayments.dat");
+        CFlatDB<CDynodePayments> flatdb2("dnpayments.dat", "magicDynodePaymentsCache");
+        if(!flatdb2.Load(dnpayments)) {
+            return InitError("Failed to load Dynode payments cache from dnpayments.dat");
         }
 
         uiInterface.InitMessage(_("Loading governance cache..."));
@@ -1749,12 +1749,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 11c: update block tip in Dynamic modules
 
-    // force UpdatedBlockTip to initialize pCurrentBlockIndex for SS, SN payments and budgets
+    // force UpdatedBlockTip to initialize pCurrentBlockIndex for SS, DN payments and budgets
     // but don't call it directly to prevent triggering of other listeners like zmq etc.
     // GetMainSignals().UpdatedBlockTip(chainActive.Tip());
-    snodeman.UpdatedBlockTip(chainActive.Tip());
+    dnodeman.UpdatedBlockTip(chainActive.Tip());
     privateSendPool.UpdatedBlockTip(chainActive.Tip());
-    snpayments.UpdatedBlockTip(chainActive.Tip());
+    dnpayments.UpdatedBlockTip(chainActive.Tip());
     dynodeSync.UpdatedBlockTip(chainActive.Tip());
     governance.UpdatedBlockTip(chainActive.Tip());
 

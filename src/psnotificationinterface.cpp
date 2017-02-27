@@ -22,10 +22,10 @@ CPSNotificationInterface::~CPSNotificationInterface()
 
 void CPSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindex)
 {
-    snodeman.UpdatedBlockTip(pindex);
+    dnodeman.UpdatedBlockTip(pindex);
     privateSendPool.UpdatedBlockTip(pindex);
     instantsend.UpdatedBlockTip(pindex);
-    snpayments.UpdatedBlockTip(pindex);
+    dnpayments.UpdatedBlockTip(pindex);
     governance.UpdatedBlockTip(pindex);
     dynodeSync.UpdatedBlockTip(pindex);
 }

@@ -52,7 +52,7 @@ private:
     bool fFilterUpdated;
 
 public Q_SLOTS:
-    void updateMyDynodeInfo(QString strAlias, QString strAddr, dynode_info_t& infoSn);
+    void updateMyDynodeInfo(QString strAlias, QString strAddr, dynode_info_t& infoDn);
     void updateMyNodeList(bool fForce = false);
     void updateNodeList();
 
@@ -64,10 +64,10 @@ private:
     ClientModel *clientModel;
     WalletModel *walletModel;
     // Protects tableWidgetDynodes
-    CCriticalSection cs_snlist;
+    CCriticalSection cs_dnlist;
 
     // Protects tableWidgetMyDynodes
-    CCriticalSection cs_mysnlist;
+    CCriticalSection cs_mydnlist;
     QString strCurrentFilter;
 
 private Q_SLOTS:

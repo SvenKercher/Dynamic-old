@@ -99,8 +99,8 @@ enum AvailableCoinsType
 {
     ALL_COINS = 1,
     ONLY_DENOMINATED = 2,
-    ONLY_NOT1000IFSN = 3,
-    ONLY_NONDENOMINATED_NOT1000IFSN = 4,
+    ONLY_NOT1000IFDN = 3,
+    ONLY_NONDENOMINATED_NOT1000IFDN = 4,
     ONLY_1000 = 5, // find Dynode outputs including locked ones (use with caution)
     ONLY_PRIVATESEND_COLLATERAL = 6
 };

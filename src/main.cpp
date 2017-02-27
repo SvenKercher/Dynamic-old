@@ -1788,11 +1788,11 @@ CAmount GetPoWBlockPayment(const int& nHeight, CAmount nFees)
 CAmount GetDynodePayment(bool fDynode)
 {
     if (fDynode) {
-        LogPrint("creation", "GetDynodePayment() : create=%s SN Payment=%d\n", FormatMoney(STATIC_DYNODE_PAYMENT), STATIC_DYNODE_PAYMENT);
+        LogPrint("creation", "GetDynodePayment() : create=%s DN Payment=%d\n", FormatMoney(STATIC_DYNODE_PAYMENT), STATIC_DYNODE_PAYMENT);
         return STATIC_DYNODE_PAYMENT; // 0.382 DYN
     }
     else {
-        LogPrint("creation", "GetDynodePayment() : create=%s SN Payment=%d\n", FormatMoney(BLOCKCHAIN_INIT_REWARD), BLOCKCHAIN_INIT_REWARD);
+        LogPrint("creation", "GetDynodePayment() : create=%s DN Payment=%d\n", FormatMoney(BLOCKCHAIN_INIT_REWARD), BLOCKCHAIN_INIT_REWARD);
         return BLOCKCHAIN_INIT_REWARD;
     }
 }
@@ -4953,19 +4953,19 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         return mapSporks.count(inv.hash);
 
     case MSG_DYNODE_PAYMENT_VOTE:
-        return snpayments.mapDynodePaymentVotes.count(inv.hash);
+        return dnpayments.mapDynodePaymentVotes.count(inv.hash);
 
     case MSG_DYNODE_PAYMENT_BLOCK:
         {
             BlockMap::iterator mi = mapBlockIndex.find(inv.hash);
-            return mi != mapBlockIndex.end() && snpayments.mapDynodeBlocks.find(mi->second->nHeight) != snpayments.mapDynodeBlocks.end();
+            return mi != mapBlockIndex.end() && dnpayments.mapDynodeBlocks.find(mi->second->nHeight) != dnpayments.mapDynodeBlocks.end();
         }
 
     case MSG_DYNODE_ANNOUNCE:
-        return snodeman.mapSeenDynodeBroadcast.count(inv.hash) && !snodeman.IsSnbRecoveryRequested(inv.hash);      
+        return dnodeman.mapSeenDynodeBroadcast.count(inv.hash) && !dnodeman.IsDnbRecoveryRequested(inv.hash);      
 
     case MSG_DYNODE_PING:
-        return snodeman.mapSeenDynodePing.count(inv.hash);
+        return dnodeman.mapSeenDynodePing.count(inv.hash);
 
     case MSG_PSTX:
         return mapPrivatesendBroadcastTxes.count(inv.hash);
@@ -4975,7 +4975,7 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         return ! governance.ConfirmInventoryRequest(inv);
 
     case MSG_DYNODE_VERIFY:
-        return snodeman.mapSeenDynodeVerification.count(inv.hash);
+        return dnodeman.mapSeenDynodeVerification.count(inv.hash);
     }
 
     // Don't know what it is, just say we already got one
@@ -5139,10 +5139,10 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                 }
 
                 if (!pushed && inv.type == MSG_DYNODE_PAYMENT_VOTE) {
-                    if(snpayments.HasVerifiedPaymentVote(inv.hash)) {
+                    if(dnpayments.HasVerifiedPaymentVote(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << snpayments.mapDynodePaymentVotes[inv.hash];
+                        ss << dnpayments.mapDynodePaymentVotes[inv.hash];
                         pfrom->PushMessage(NetMsgType::DYNODEPAYMENTVOTE, ss);
                         pushed = true;
                     }
@@ -5151,14 +5151,14 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                 if (!pushed && inv.type == MSG_DYNODE_PAYMENT_BLOCK) {
                     BlockMap::iterator mi = mapBlockIndex.find(inv.hash);
                     LOCK(cs_mapDynodeBlocks);
-                    if (mi != mapBlockIndex.end() && snpayments.mapDynodeBlocks.count(mi->second->nHeight)) {
-                        BOOST_FOREACH(CDynodePayee& payee, snpayments.mapDynodeBlocks[mi->second->nHeight].vecPayees) {
+                    if (mi != mapBlockIndex.end() && dnpayments.mapDynodeBlocks.count(mi->second->nHeight)) {
+                        BOOST_FOREACH(CDynodePayee& payee, dnpayments.mapDynodeBlocks[mi->second->nHeight].vecPayees) {
                             std::vector<uint256> vecVoteHashes = payee.GetVoteHashes();
                             BOOST_FOREACH(uint256& hash, vecVoteHashes) {
-                                if(snpayments.HasVerifiedPaymentVote(hash)) {
+                                if(dnpayments.HasVerifiedPaymentVote(hash)) {
                                     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                                     ss.reserve(1000);
-                                    ss << snpayments.mapDynodePaymentVotes[hash];
+                                    ss << dnpayments.mapDynodePaymentVotes[hash];
                                     pfrom->PushMessage(NetMsgType::DYNODEPAYMENTVOTE, ss);
                                 }
                             }
@@ -5168,22 +5168,22 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                 }
 
                 if (!pushed && inv.type == MSG_DYNODE_ANNOUNCE) {
-                    if(snodeman.mapSeenDynodeBroadcast.count(inv.hash)){
+                    if(dnodeman.mapSeenDynodeBroadcast.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << snodeman.mapSeenDynodeBroadcast[inv.hash].second;
-                        ss << snodeman.mapSeenDynodeBroadcast[inv.hash];
-                        pfrom->PushMessage(NetMsgType::SNANNOUNCE, ss);
+                        ss << dnodeman.mapSeenDynodeBroadcast[inv.hash].second;
+                        ss << dnodeman.mapSeenDynodeBroadcast[inv.hash];
+                        pfrom->PushMessage(NetMsgType::DNANNOUNCE, ss);
                         pushed = true;
                     }
                 }
 
                 if (!pushed && inv.type == MSG_DYNODE_PING) {
-                    if(snodeman.mapSeenDynodePing.count(inv.hash)) {
+                    if(dnodeman.mapSeenDynodePing.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << snodeman.mapSeenDynodePing[inv.hash];
-                        pfrom->PushMessage(NetMsgType::SNPING, ss);
+                        ss << dnodeman.mapSeenDynodePing[inv.hash];
+                        pfrom->PushMessage(NetMsgType::DNPING, ss);
                         pushed = true;
                     }
                 }
@@ -5212,7 +5212,7 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                     }
                     LogPrint("net", "ProcessGetData -- MSG_GOVERNANCE_OBJECT: topush = %d, inv = %s\n", topush, inv.ToString());
                     if(topush) {
-                        pfrom->PushMessage(NetMsgType::SNGOVERNANCEOBJECT, ss);
+                        pfrom->PushMessage(NetMsgType::DNGOVERNANCEOBJECT, ss);
                         pushed = true;
                     }
                 }
@@ -5230,17 +5230,17 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                     }
                     if(topush) {
                         LogPrint("net", "ProcessGetData -- pushing: inv = %s\n", inv.ToString());
-                        pfrom->PushMessage(NetMsgType::SNGOVERNANCEOBJECTVOTE, ss);
+                        pfrom->PushMessage(NetMsgType::DNGOVERNANCEOBJECTVOTE, ss);
                         pushed = true;
                     }
                 }
 
                 if (!pushed && inv.type == MSG_DYNODE_VERIFY) {
-                    if(snodeman.mapSeenDynodeVerification.count(inv.hash)) {
+                    if(dnodeman.mapSeenDynodeVerification.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << snodeman.mapSeenDynodeVerification[inv.hash];
-                        pfrom->PushMessage(NetMsgType::SNVERIFY, ss);
+                        ss << dnodeman.mapSeenDynodeVerification[inv.hash];
+                        pfrom->PushMessage(NetMsgType::DNVERIFY, ss);
                         pushed = true;
                     }
                 }
@@ -5766,27 +5766,27 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 return true; // not an error
             }
 
-            CDynode* psn = snodeman.Find(pstx.vin);
-            if(psn == NULL) {
+            CDynode* pdn = dnodeman.Find(pstx.vin);
+            if(pdn == NULL) {
                 LogPrint("privatesend", "PSTX -- Can't find Dynode %s to verify %s\n", pstx.vin.prevout.ToStringShort(), hashTx.ToString());
                 return false;
             }
 
-            if(!psn->fAllowMixingTx) {
+            if(!pdn->fAllowMixingTx) {
                 LogPrint("privatesend", "PSTX -- Dynode %s is sending too many transactions %s\n", pstx.vin.prevout.ToStringShort(), hashTx.ToString());
                 return true;
                 // TODO: Not an error? Could it be that someone is relaying old PSTXes
                 // we have no idea about (e.g we were offline)? How to handle them?
             }
 
-            if(!pstx.CheckSignature(psn->pubKeyDynode)) {
+            if(!pstx.CheckSignature(pdn->pubKeyDynode)) {
                 LogPrint("privatesend", "PSTX -- CheckSignature() failed for %s\n", hashTx.ToString());
                 return false;
             }
 
             LogPrintf("PSTX -- Got Dynode transaction %s\n", hashTx.ToString());
             mempool.PrioritiseTransaction(hashTx, hashTx.ToString(), 1000, 0.1*COIN);
-            psn->fAllowMixingTx = false;
+            pdn->fAllowMixingTx = false;
         }
 
         LOCK(cs_main);
@@ -6312,8 +6312,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         {
             //probably one the extensions
             privateSendPool.ProcessMessage(pfrom, strCommand, vRecv);
-            snodeman.ProcessMessage(pfrom, strCommand, vRecv);
-            snpayments.ProcessMessage(pfrom, strCommand, vRecv);
+            dnodeman.ProcessMessage(pfrom, strCommand, vRecv);
+            dnpayments.ProcessMessage(pfrom, strCommand, vRecv);
             instantsend.ProcessMessage(pfrom, strCommand, vRecv);
             sporkManager.ProcessSpork(pfrom, strCommand, vRecv);
             dynodeSync.ProcessMessage(pfrom, strCommand, vRecv);

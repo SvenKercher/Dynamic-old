@@ -13,14 +13,14 @@ using namespace std;
 
 class CDynodeMan;
 
-extern CDynodeMan snodeman;
+extern CDynodeMan dnodeman;
 
 /**
- * Provides a forward and reverse index between SN vin's and integers.
+ * Provides a forward and reverse index between DN vin's and integers.
  *
  * This mapping is normally add-only and is expected to be permanent
  * It is only rebuilt if the size of the index exceeds the expected maximum number
- * of SN's and the current number of known SN's.
+ * of DN's and the current number of known DN's.
  *
  * The external interface to this index is provided via delegation by CDynodeMan
  */
@@ -105,11 +105,11 @@ private:
     static const int MAX_POSE_RANK              = 10;
     static const int MAX_POSE_BLOCKS            = 10;
 
-    static const int SNB_RECOVERY_QUORUM_TOTAL      = 10;
-    static const int SNB_RECOVERY_QUORUM_REQUIRED   = 10;
-    static const int SNB_RECOVERY_MAX_ASK_ENTRIES   = 10;
-    static const int SNB_RECOVERY_WAIT_SECONDS      = 60;
-    static const int SNB_RECOVERY_RETRY_SECONDS     = 3 * 60 * 60;
+    static const int DNB_RECOVERY_QUORUM_TOTAL      = 10;
+    static const int DNB_RECOVERY_QUORUM_REQUIRED   = 10;
+    static const int DNB_RECOVERY_MAX_ASK_ENTRIES   = 10;
+    static const int DNB_RECOVERY_WAIT_SECONDS      = 60;
+    static const int DNB_RECOVERY_RETRY_SECONDS     = 3 * 60 * 60;
 
     // critical section to protect the inner data structures
     mutable CCriticalSection cs;
@@ -117,7 +117,7 @@ private:
     // Keep track of current block index
     const CBlockIndex *pCurrentBlockIndex;
 
-    // map to hold all SNs
+    // map to hold all DNs
     std::vector<CDynode> vDynodes;
     // who's asked for the Dynode list and the last time
     std::map<CNetAddr, int64_t> mAskedUsForDynodeList;
@@ -129,9 +129,9 @@ private:
     std::map<CNetAddr, CDynodeVerification> mWeAskedForVerification;
 
     // these maps are used for Dynode recovery from DYNODE_NEW_START_REQUIRED state
-    std::map<uint256, std::pair< int64_t, std::set<CNetAddr> > > mSnbRecoveryRequests;
-    std::map<uint256, std::vector<CDynodeBroadcast> > mSnbRecoveryGoodReplies;
-    std::list< std::pair<CService, uint256> > listScheduledSnbRequestConnections;
+    std::map<uint256, std::pair< int64_t, std::set<CNetAddr> > > mDnbRecoveryRequests;
+    std::map<uint256, std::vector<CDynodeBroadcast> > mDnbRecoveryGoodReplies;
+    std::list< std::pair<CService, uint256> > listScheduledDnbRequestConnections;
 
 
     int64_t nLastIndexRebuildTime;
@@ -184,8 +184,8 @@ public:
         READWRITE(mAskedUsForDynodeList);
         READWRITE(mWeAskedForDynodeList);
         READWRITE(mWeAskedForDynodeListEntry);
-        READWRITE(mSnbRecoveryRequests);
-        READWRITE(mSnbRecoveryGoodReplies);
+        READWRITE(mDnbRecoveryRequests);
+        READWRITE(mDnbRecoveryGoodReplies);
         READWRITE(nLastWatchdogVoteTime);
         READWRITE(nSsqCount);
 
@@ -200,11 +200,11 @@ public:
     CDynodeMan();
 
     /// Add an entry
-    bool Add(CDynode &sn);
+    bool Add(CDynode &dn);
 
-    /// Ask (source) node for snb
-    void AskForSN(CNode *pnode, const CTxIn &vin);
-    void AskForSnb(CNode *pnode, const uint256 &hash);
+    /// Ask (source) node for dnb
+    void AskForDN(CNode *pnode, const CTxIn &vin);
+    void AskForDnb(CNode *pnode, const uint256 &hash);
 
     /// Check all Dynodes
     void Check();
@@ -300,16 +300,16 @@ public:
     CDynode* GetDynodeByRank(int nRank, int nBlockHeight, int nMinProtocol=0, bool fOnlyActive=true);
 
     void ProcessDynodeConnections();
-    std::pair<CService, std::set<uint256> > PopScheduledSnbRequestConnection();
+    std::pair<CService, std::set<uint256> > PopScheduledDnbRequestConnection();
 
     void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
 
     void DoFullVerificationStep();
     void CheckSameAddr();
     bool SendVerifyRequest(const CAddress& addr, const std::vector<CDynode*>& vSortedByAddr);
-    void SendVerifyReply(CNode* pnode, CDynodeVerification& snv);
-    void ProcessVerifyReply(CNode* pnode, CDynodeVerification& snv);
-    void ProcessVerifyBroadcast(CNode* pnode, const CDynodeVerification& snv);
+    void SendVerifyReply(CNode* pnode, CDynodeVerification& dnv);
+    void ProcessVerifyReply(CNode* pnode, CDynodeVerification& dnv);
+    void ProcessVerifyBroadcast(CNode* pnode, const CDynodeVerification& dnv);
 
     /// Return the number of (unique) Dynodes
     int size() { return vDynodes.size(); }
@@ -317,10 +317,10 @@ public:
     std::string ToString() const;
 
     /// Update Dynode list and maps using provided CDynodeBroadcast
-    void UpdateDynodeList(CDynodeBroadcast snb);
+    void UpdateDynodeList(CDynodeBroadcast dnb);
     /// Perform complete check and only then update list and maps
-    bool CheckSnbAndUpdateDynodeList(CNode* pfrom, CDynodeBroadcast snb, int& nDos);
-    bool IsSnbRecoveryRequested(const uint256& hash) { return mSnbRecoveryRequests.count(hash); }
+    bool CheckDnbAndUpdateDynodeList(CNode* pfrom, CDynodeBroadcast dnb, int& nDos);
+    bool IsDnbRecoveryRequested(const uint256& hash) { return mDnbRecoveryRequests.count(hash); }
 
     void UpdateLastPaid();
 
@@ -352,7 +352,7 @@ public:
     int GetDynodeState(const CPubKey& pubKeyDynode);
 
     bool IsDynodePingedWithin(const CTxIn& vin, int nSeconds, int64_t nTimeToCheckAt = -1);
-    void SetDynodeLastPing(const CTxIn& vin, const CDynodePing& snp);
+    void SetDynodeLastPing(const CTxIn& vin, const CDynodePing& dnp);
 
     void UpdatedBlockTip(const CBlockIndex *pindex);
 

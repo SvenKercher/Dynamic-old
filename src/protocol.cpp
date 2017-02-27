@@ -42,12 +42,12 @@ const char *TXLOCKREQUEST="is";
 const char *TXLOCKVOTE="txlvote";
 const char *SPORK="spork";
 const char *GETSPORKS="getsporks";
-const char *DYNODEPAYMENTVOTE="snw";
-const char *DYNODEPAYMENTBLOCK="snwb";
-const char *DYNODEPAYMENTSYNC="snget";
-const char *SNQUORUM="sn quorum"; // not implemented
-const char *SNANNOUNCE="snb";
-const char *SNPING="snp";
+const char *DYNODEPAYMENTVOTE="dnw";
+const char *DYNODEPAYMENTBLOCK="dnwb";
+const char *DYNODEPAYMENTSYNC="dnget";
+const char *DNQUORUM="dn quorum"; // not implemented
+const char *DNANNOUNCE="dnb";
+const char *DNPING="dnp";
 const char *PSACCEPT="psa";
 const char *PSVIN="psi";
 const char *PSFINALTX="psf";
@@ -58,10 +58,10 @@ const char *PSTX="pstx";
 const char *PSQUEUE="psq";
 const char *SSEG="sseg";
 const char *SYNCSTATUSCOUNT="ssc";
-const char *SNGOVERNANCESYNC="govsync";
-const char *SNGOVERNANCEOBJECT="govobj";
-const char *SNGOVERNANCEOBJECTVOTE="govobjvote";
-const char *SNVERIFY="snv";
+const char *DNGOVERNANCESYNC="govsync";
+const char *DNGOVERNANCEOBJECT="govobj";
+const char *DNGOVERNANCEOBJECTVOTE="govobjvote";
+const char *DNVERIFY="dnv";
 };
 
 static const char* ppszTypeName[] =
@@ -77,13 +77,13 @@ static const char* ppszTypeName[] =
     NetMsgType::SPORK,
     NetMsgType::DYNODEPAYMENTVOTE,
     NetMsgType::DYNODEPAYMENTBLOCK,
-    NetMsgType::SNQUORUM, // not implemented
-    NetMsgType::SNANNOUNCE,
-    NetMsgType::SNPING,
+    NetMsgType::DNQUORUM, // not implemented
+    NetMsgType::DNANNOUNCE,
+    NetMsgType::DNPING,
     NetMsgType::PSTX,
-    NetMsgType::SNGOVERNANCEOBJECT,
-    NetMsgType::SNGOVERNANCEOBJECTVOTE,
-    NetMsgType::SNVERIFY,
+    NetMsgType::DNGOVERNANCEOBJECT,
+    NetMsgType::DNGOVERNANCEOBJECTVOTE,
+    NetMsgType::DNVERIFY,
 };
 
 /** All known message types. Keep this in the same order as the list of
@@ -121,8 +121,8 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::DYNODEPAYMENTVOTE,
     // NetMsgType::DYNODEPAYMENTBLOCK, // there is no message for this, only inventory
     NetMsgType::DYNODEPAYMENTSYNC,
-    NetMsgType::SNANNOUNCE,
-    NetMsgType::SNPING,
+    NetMsgType::DNANNOUNCE,
+    NetMsgType::DNPING,
     NetMsgType::PSACCEPT,
     NetMsgType::PSVIN,
     NetMsgType::PSFINALTX,
@@ -133,10 +133,10 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::PSQUEUE,
     NetMsgType::SSEG,
     NetMsgType::SYNCSTATUSCOUNT,
-    NetMsgType::SNGOVERNANCESYNC,
-    NetMsgType::SNGOVERNANCEOBJECT,
-    NetMsgType::SNGOVERNANCEOBJECTVOTE,
-    NetMsgType::SNVERIFY,
+    NetMsgType::DNGOVERNANCESYNC,
+    NetMsgType::DNGOVERNANCEOBJECT,
+    NetMsgType::DNGOVERNANCEOBJECTVOTE,
+    NetMsgType::DNVERIFY,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 

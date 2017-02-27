@@ -144,13 +144,13 @@ UniValue gobject(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Must wait for client to sync with Dynode network. Try again in a minute or so.");
         }
 
-        CDynode sn;
-        bool fSnFound = snodeman.Get(activeDynode.vin, sn);
+        CDynode dn;
+        bool fDnFound = dnodeman.Get(activeDynode.vin, dn);
 
         DBG( cout << "gobject: submit activeDynode.pubKeyDynode = " << activeDynode.pubKeyDynode.GetHash().ToString()
              << ", vin = " << activeDynode.vin.prevout.ToStringShort()
              << ", params.size() = " << params.size()
-             << ", fSnFound = " << fSnFound << endl; );
+             << ", fDnFound = " << fDnFound << endl; );
 
         // ASSEMBLE NEW GOVERNANCE OBJECT FROM USER PARAMETERS
 
@@ -182,11 +182,11 @@ UniValue gobject(const UniValue& params, bool fHelp)
              << ", txidFee = " << txidFee.GetHex()
              << endl; );
 
-        // Attempt to sign triggers if we are a SN
+        // Attempt to sign triggers if we are a DN
         if((govobj.GetObjectType() == GOVERNANCE_OBJECT_TRIGGER) ||
            (govobj.GetObjectType() == GOVERNANCE_OBJECT_WATCHDOG)) {
-            if(fSnFound) {
-                govobj.SetDynodeInfo(sn.vin);
+            if(fDnFound) {
+                govobj.SetDynodeInfo(dn.vin);
                 govobj.Sign(activeDynode.keyDynode, activeDynode.pubKeyDynode);
             }
             else {
@@ -264,10 +264,10 @@ UniValue gobject(const UniValue& params, bool fHelp)
         UniValue statusObj(UniValue::VOBJ);
         UniValue returnObj(UniValue::VOBJ);
 
-        CDynode sn;
-        bool fSnFound = snodeman.Get(activeDynode.vin, sn);
+        CDynode dn;
+        bool fDnFound = dnodeman.Get(activeDynode.vin, dn);
 
-        if(!fSnFound) {
+        if(!fDnFound) {
             nFailed++;
             statusObj.push_back(Pair("result", "failed"));
             statusObj.push_back(Pair("errorMessage", "Can't find Dynode by collateral output"));
@@ -277,7 +277,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
             return returnObj;
         }
 
-        CGovernanceVote vote(sn.vin, hash, eVoteSignal, eVoteOutcome);
+        CGovernanceVote vote(dn.vin, hash, eVoteSignal, eVoteOutcome);
         if(!vote.Sign(activeDynode.keyDynode, activeDynode.pubKeyDynode)) {
             nFailed++;
             statusObj.push_back(Pair("result", "failed"));
@@ -335,12 +335,12 @@ UniValue gobject(const UniValue& params, bool fHelp)
         int nSuccessful = 0;
         int nFailed = 0;
 
-        std::vector<CDynodeConfig::CDynodeEntry> snEntries;
-        snEntries = dynodeConfig.getEntries();
+        std::vector<CDynodeConfig::CDynodeEntry> dnEntries;
+        dnEntries = dynodeConfig.getEntries();
 
         UniValue resultsObj(UniValue::VOBJ);
 
-        BOOST_FOREACH(CDynodeConfig::CDynodeEntry sne, dynodeConfig.getEntries()) {
+        BOOST_FOREACH(CDynodeConfig::CDynodeEntry dne, dynodeConfig.getEntries()) {
             std::string strError;
             std::vector<unsigned char> vchDyNodeSignature;
             std::string strDyNodeSignMessage;
@@ -352,41 +352,41 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
             UniValue statusObj(UniValue::VOBJ);
 
-            if(!privateSendSigner.GetKeysFromSecret(sne.getPrivKey(), keyDynode, pubKeyDynode)){
+            if(!privateSendSigner.GetKeysFromSecret(dne.getPrivKey(), keyDynode, pubKeyDynode)){
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
                 statusObj.push_back(Pair("errorMessage", "Dynode signing error, could not set key correctly"));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
             uint256 nTxHash;
-            nTxHash.SetHex(sne.getTxHash());
+            nTxHash.SetHex(dne.getTxHash());
 
             int nOutputIndex = 0;
-            if(!ParseInt32(sne.getOutputIndex(), &nOutputIndex)) {
+            if(!ParseInt32(dne.getOutputIndex(), &nOutputIndex)) {
                 continue;
             }
 
             CTxIn vin(COutPoint(nTxHash, nOutputIndex));
 
-            CDynode sn;
-            bool fSnFound = snodeman.Get(vin, sn);
+            CDynode dn;
+            bool fDnFound = dnodeman.Get(vin, dn);
 
-            if(!fSnFound) {
+            if(!fDnFound) {
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
                 statusObj.push_back(Pair("errorMessage", "Can't find Dynode by collateral output"));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
-            CGovernanceVote vote(sn.vin, hash, eVoteSignal, eVoteOutcome);
+            CGovernanceVote vote(dn.vin, hash, eVoteSignal, eVoteOutcome);
             if(!vote.Sign(keyDynode, pubKeyDynode)){
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
                 statusObj.push_back(Pair("errorMessage", "Failure to sign."));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
@@ -401,7 +401,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
                 statusObj.push_back(Pair("errorMessage", exception.GetMessage()));
             }
 
-            resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+            resultsObj.push_back(Pair(dne.getAlias(), statusObj));
         }
 
         UniValue returnObj(UniValue::VOBJ);
@@ -447,15 +447,15 @@ UniValue gobject(const UniValue& params, bool fHelp)
         int nSuccessful = 0;
         int nFailed = 0;
 
-        std::vector<CDynodeConfig::CDynodeEntry> snEntries;
-        snEntries = dynodeConfig.getEntries();
+        std::vector<CDynodeConfig::CDynodeEntry> dnEntries;
+        dnEntries = dynodeConfig.getEntries();
 
         UniValue resultsObj(UniValue::VOBJ);
 
-        BOOST_FOREACH(CDynodeConfig::CDynodeEntry sne, dynodeConfig.getEntries())
+        BOOST_FOREACH(CDynodeConfig::CDynodeEntry dne, dynodeConfig.getEntries())
         {
             // IF WE HAVE A SPECIFIC NODE REQUESTED TO VOTE, DO THAT
-            if(strAlias != sne.getAlias()) continue;
+            if(strAlias != dne.getAlias()) continue;
 
             // INIT OUR NEEDED VARIABLES TO EXECUTE THE VOTE
             std::string strError;
@@ -471,34 +471,34 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
             UniValue statusObj(UniValue::VOBJ);
 
-            if(!privateSendSigner.GetKeysFromSecret(sne.getPrivKey(), keyDynode, pubKeyDynode)) {
+            if(!privateSendSigner.GetKeysFromSecret(dne.getPrivKey(), keyDynode, pubKeyDynode)) {
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
-                statusObj.push_back(Pair("errorMessage", strprintf("Invalid Dynode key %s.", sne.getPrivKey())));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                statusObj.push_back(Pair("errorMessage", strprintf("Invalid Dynode key %s.", dne.getPrivKey())));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
             // SEARCH FOR THIS DYNODE ON THE NETWORK, THE NODE MUST BE ACTIVE TO VOTE
 
             uint256 nTxHash;
-            nTxHash.SetHex(sne.getTxHash());
+            nTxHash.SetHex(dne.getTxHash());
 
             int nOutputIndex = 0;
-            if(!ParseInt32(sne.getOutputIndex(), &nOutputIndex)) {
+            if(!ParseInt32(dne.getOutputIndex(), &nOutputIndex)) {
                 continue;
             }
 
             CTxIn vin(COutPoint(nTxHash, nOutputIndex));
 
-            CDynode sn;
-            bool fSnFound = snodeman.Get(vin, sn);
+            CDynode dn;
+            bool fDnFound = dnodeman.Get(vin, dn);
 
-            if(!fSnFound) {
+            if(!fDnFound) {
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
                 statusObj.push_back(Pair("errorMessage", "Dynode must be publically available on network to vote. Dynode not found."));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
@@ -509,7 +509,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
                 nFailed++;
                 statusObj.push_back(Pair("result", "failed"));
                 statusObj.push_back(Pair("errorMessage", "Failure to sign."));
-                resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+                resultsObj.push_back(Pair(dne.getAlias(), statusObj));
                 continue;
             }
 
@@ -526,7 +526,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
                 statusObj.push_back(Pair("errorMessage", exception.GetMessage()));
             }
 
-            resultsObj.push_back(Pair(sne.getAlias(), statusObj));
+            resultsObj.push_back(Pair(dne.getAlias(), statusObj));
         }
 
         // REPORT STATS TO THE USER
@@ -739,12 +739,12 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
         uint256 hash = ParseHashV(params[1], "Governance hash");
 
-        CTxIn snCollateralOutpoint;
+        CTxIn dnCollateralOutpoint;
         if (params.size() == 4) {
             uint256 txid = ParseHashV(params[2], "Dynode Collateral hash");
             std::string strVout = params[3].get_str();
             uint32_t vout = boost::lexical_cast<uint32_t>(strVout);
-            snCollateralOutpoint = CTxIn(txid, vout);
+            dnCollateralOutpoint = CTxIn(txid, vout);
         }
 
         // FIND OBJECT USER IS LOOKING FOR
@@ -763,7 +763,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
         // GET MATCHING VOTES BY HASH, THEN SHOW USERS VOTE INFORMATION
 
-        std::vector<CGovernanceVote> vecVotes = governance.GetCurrentVotes(hash, snCollateralOutpoint);
+        std::vector<CGovernanceVote> vecVotes = governance.GetCurrentVotes(hash, dnCollateralOutpoint);
         BOOST_FOREACH(CGovernanceVote vote, vecVotes) {
             bResult.push_back(Pair(vote.GetHash().ToString(),  vote.ToString()));
         }
@@ -782,9 +782,9 @@ UniValue voteraw(const UniValue& params, bool fHelp)
                 "Compile and relay a governance vote with provided external signature instead of signing vote internally\n"
                 );
 
-    uint256 hashSnTx = ParseHashV(params[0], "sn tx hash");
-    int nSnTxIndex = params[1].get_int();
-    CTxIn vin = CTxIn(hashSnTx, nSnTxIndex);
+    uint256 hashDnTx = ParseHashV(params[0], "Dynode tx hash");
+    int nDnTxIndex = params[1].get_int();
+    CTxIn vin = CTxIn(hashDnTx, nDnTxIndex);
 
     uint256 hashGovObj = ParseHashV(params[2], "Governance hash");
     std::string strVoteSignal = params[3].get_str();
@@ -811,10 +811,10 @@ UniValue voteraw(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Malformed base64 encoding");
     }
 
-    CDynode sn;
-    bool fSnFound = snodeman.Get(vin, sn);
+    CDynode dn;
+    bool fDnFound = dnodeman.Get(vin, dn);
 
-    if(!fSnFound) {
+    if(!fDnFound) {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Failure to find Dynode in list : " + vin.prevout.ToStringShort());
     }
 

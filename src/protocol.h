@@ -230,8 +230,8 @@ extern const char *SPORK;
 extern const char *GETSPORKS;
 extern const char *DYNODEPAYMENTVOTE;
 extern const char *DYNODEPAYMENTSYNC;
-extern const char *SNANNOUNCE;
-extern const char *SNPING;
+extern const char *DNANNOUNCE;
+extern const char *DNPING;
 extern const char *PSACCEPT;
 extern const char *PSVIN;
 extern const char *PSFINALTX;
@@ -242,10 +242,10 @@ extern const char *PSTX;
 extern const char *PSQUEUE;
 extern const char *SSEG;
 extern const char *SYNCSTATUSCOUNT;
-extern const char *SNGOVERNANCESYNC;
-extern const char *SNGOVERNANCEOBJECT;
-extern const char *SNGOVERNANCEOBJECTVOTE;
-extern const char *SNVERIFY;
+extern const char *DNGOVERNANCESYNC;
+extern const char *DNGOVERNANCEOBJECT;
+extern const char *DNGOVERNANCEOBJECTVOTE;
+extern const char *DNVERIFY;
 };
 
 /* Get a vector of all valid message types (see above) */

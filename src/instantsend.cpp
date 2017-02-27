@@ -178,7 +178,7 @@ void CInstantSend::Vote(CTxLockCandidate& txLockCandidate)
 
         int nLockInputHeight = nPrevoutHeight + 4;
 
-        int n = snodeman.GetDynodeRank(activeDynode.vin, nLockInputHeight, MIN_INSTANTSEND_PROTO_VERSION);
+        int n = dnodeman.GetDynodeRank(activeDynode.vin, nLockInputHeight, MIN_INSTANTSEND_PROTO_VERSION);
 
         if(n == -1) {
             LogPrint("instantsend", "CInstantSend::Vote -- Unknown Dynode %s\n", activeDynode.vin.prevout.ToStringShort());
@@ -931,9 +931,9 @@ bool CTxLockRequest::IsTimedOut() const
 
 bool CTxLockVote::IsValid(CNode* pnode) const
 {
-    if(!snodeman.Has(CTxIn(outpointDynode))) {
+    if(!dnodeman.Has(CTxIn(outpointDynode))) {
         LogPrint("instantsend", "CTxLockVote::IsValid -- Unknown dynode %s\n", outpointDynode.ToStringShort());
-        snodeman.AskForSN(pnode, CTxIn(outpointDynode));
+        dnodeman.AskForDN(pnode, CTxIn(outpointDynode));
         return false;
     }
 
@@ -960,7 +960,7 @@ bool CTxLockVote::IsValid(CNode* pnode) const
 
     int nLockInputHeight = nPrevoutHeight + 4;
 
-    int n = snodeman.GetDynodeRank(CTxIn(outpointDynode), nLockInputHeight, MIN_INSTANTSEND_PROTO_VERSION);
+    int n = dnodeman.GetDynodeRank(CTxIn(outpointDynode), nLockInputHeight, MIN_INSTANTSEND_PROTO_VERSION);
 
     if(n == -1) {
         //can be caused by past versions trying to vote with an invalid protocol
@@ -998,7 +998,7 @@ bool CTxLockVote::CheckSignature() const
     std::string strError;
     std::string strMessage = txHash.ToString() + outpoint.ToStringShort();
 
-    dynode_info_t infoSn = snodeman.GetDynodeInfo(CTxIn(outpointDynode));
+    dynode_info_t infoSn = dnodeman.GetDynodeInfo(CTxIn(outpointDynode));
 
     if(!infoSn.fInfoValid) {
         LogPrintf("CTxLockVote::CheckSignature -- Unknown Dynode: dynode=%s\n", outpointDynode.ToString());

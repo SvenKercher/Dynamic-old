@@ -17,7 +17,7 @@ static const int DYNODE_SYNC_FAILED          = -1;
 static const int DYNODE_SYNC_INITIAL         = 0;
 static const int DYNODE_SYNC_SPORKS          = 1;
 static const int DYNODE_SYNC_LIST            = 2;
-static const int DYNODE_SYNC_SNW             = 3;
+static const int DYNODE_SYNC_DNW             = 3;
 static const int DYNODE_SYNC_GOVERNANCE      = 4;
 static const int DYNODE_SYNC_GOVOBJ          = 10;
 static const int DYNODE_SYNC_GOVOBJ_VOTE     = 11;
@@ -74,7 +74,7 @@ public:
     bool IsFailed() { return nRequestedDynodeAssets == DYNODE_SYNC_FAILED; }
     bool IsBlockchainSynced(bool fBlockAccepted = false);
     bool IsDynodeListSynced() { return nRequestedDynodeAssets > DYNODE_SYNC_LIST; }
-    bool IsWinnersListSynced() { return nRequestedDynodeAssets > DYNODE_SYNC_SNW; }
+    bool IsWinnersListSynced() { return nRequestedDynodeAssets > DYNODE_SYNC_DNW; }
     bool IsSynced() { return nRequestedDynodeAssets == DYNODE_SYNC_FINISHED; }
 
     int GetAssetID() { return nRequestedDynodeAssets; }

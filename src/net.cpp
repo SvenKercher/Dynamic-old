@@ -390,7 +390,7 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest, bool fConnectToDyn
 {
     if (pszDest == NULL) {
         // we clean Dynode connections in CDynodeMan::ProcessDynodeConnections()
-        // so should be safe to skip this and connect to local Hot SN on CActiveDynode::ManageState()
+        // so should be safe to skip this and connect to local Hot DN on CActiveDynode::ManageState()
         if (IsLocal(addrConnect) && !fConnectToDynode)
             return NULL;
 
@@ -1671,7 +1671,7 @@ void ThreadOpenAddedConnections()
     }
 }
 
-void ThreadSnbRequestConnections()
+void ThreadDnbRequestConnections()
 {
     // Connecting to specific addresses, no dynode connections available
     if (mapArgs.count("-connect") && mapMultiArgs["-connect"].size() > 0)
@@ -1684,7 +1684,7 @@ void ThreadSnbRequestConnections()
         CSemaphoreGrant grant(*semDynodeOutbound);
         boost::this_thread::interruption_point();
 
-        std::pair<CService, std::set<uint256> > p = snodeman.PopScheduledSnbRequestConnection();
+        std::pair<CService, std::set<uint256> > p = dnodeman.PopScheduledDnbRequestConnection();
         if(p.first == CService() || p.second.empty()) continue;
 
         CNode* pnode = NULL;
@@ -1703,7 +1703,7 @@ void ThreadSnbRequestConnections()
         while(it != p.second.end()) {
             if(*it != uint256()) {
                 vToFetch.push_back(CInv(MSG_DYNODE_ANNOUNCE, *it));
-                LogPrint("Dynode", "ThreadSnbRequestConnections -- asking for snb %s from addr=%s\n", it->ToString(), p.first.ToString());
+                LogPrint("Dynode", "ThreadDnbRequestConnections -- asking for dnb %s from addr=%s\n", it->ToString(), p.first.ToString());
             }
             ++it;
         }
@@ -2018,7 +2018,7 @@ void StartNode(boost::thread_group& threadGroup, CScheduler& scheduler)
     threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "opencon", &ThreadOpenConnections));
 
     // Initiate dynode connections
-    threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "snbcon", &ThreadSnbRequestConnections));
+    threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "dnbcon", &ThreadDnbRequestConnections));
 
     // Process messages
     threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "msghand", &ThreadMessageHandler));

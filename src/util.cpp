@@ -277,7 +277,7 @@ bool LogAcceptCategory(const char* category)
                 ptrCategory->insert(string("dynode"));
                 ptrCategory->insert(string("spork"));
                 ptrCategory->insert(string("keepass"));
-                ptrCategory->insert(string("snpayments"));
+                ptrCategory->insert(string("dnpayments"));
                 ptrCategory->insert(string("gobject"));
             }
         }
@@ -655,7 +655,7 @@ boost::filesystem::path GetConfigFile()
 
 boost::filesystem::path GetDynodeConfigFile()
 {
-    boost::filesystem::path pathConfigFile(GetArg("-snconf", "dynode.conf"));
+    boost::filesystem::path pathConfigFile(GetArg("-dnconf", "dynode.conf"));
     if (!pathConfigFile.is_complete()) pathConfigFile = GetDataDir() / pathConfigFile;
     return pathConfigFile;
 }

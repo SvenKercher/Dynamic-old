@@ -111,7 +111,7 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
     if(pfrom->nVersion < MIN_GOVERNANCE_PEER_PROTO_VERSION) return;
 
     // ANOTHER USER IS ASKING US TO HELP THEM SYNC GOVERNANCE OBJECT DATA
-    if (strCommand == NetMsgType::SNGOVERNANCESYNC)
+    if (strCommand == NetMsgType::DNGOVERNANCESYNC)
     {
 
         // Ignore such requests until we are fully synced.
@@ -127,33 +127,33 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
         filter.UpdateEmptyFull();
 
         if(nProp == uint256()) {
-            if(netfulfilledman.HasFulfilledRequest(pfrom->addr, NetMsgType::SNGOVERNANCESYNC)) {
+            if(netfulfilledman.HasFulfilledRequest(pfrom->addr, NetMsgType::DNGOVERNANCESYNC)) {
                 // Asking for the whole list multiple times in a short period of time is no good
-                LogPrint("gobject", "SNGOVERNANCESYNC -- peer already asked me for the list\n");
+                LogPrint("gobject", "DNGOVERNANCESYNC -- peer already asked me for the list\n");
                 Misbehaving(pfrom->GetId(), 20);
                 return;
             }
-            netfulfilledman.AddFulfilledRequest(pfrom->addr, NetMsgType::SNGOVERNANCESYNC);
+            netfulfilledman.AddFulfilledRequest(pfrom->addr, NetMsgType::DNGOVERNANCESYNC);
         }
 
         Sync(pfrom, nProp, filter);
-        LogPrint("gobject", "SNGOVERNANCESYNC -- syncing governance objects to our peer at %s\n", pfrom->addr.ToString());
+        LogPrint("gobject", "DNGOVERNANCESYNC -- syncing governance objects to our peer at %s\n", pfrom->addr.ToString());
 
     }
 
     // A NEW GOVERNANCE OBJECT HAS ARRIVED
-    else if (strCommand == NetMsgType::SNGOVERNANCEOBJECT)
+    else if (strCommand == NetMsgType::DNGOVERNANCEOBJECT)
 
     {
         // MAKE SURE WE HAVE A VALID REFERENCE TO THE TIP BEFORE CONTINUING
 
         if(!pCurrentBlockIndex) {
-            LogPrintf("CGovernanceManager::ProcessMessage SNGOVERNANCEOBJECT -- pCurrentBlockIndex is NULL\n");
+            LogPrintf("CGovernanceManager::ProcessMessage DNGOVERNANCEOBJECT -- pCurrentBlockIndex is NULL\n");
             return;
         }
 
         if(!dynodeSync.IsDynodeListSynced()) {
-            LogPrint("gobject", "SNGOVERNANCEOBJECT -- Dynode list not synced\n");
+            LogPrint("gobject", "DNGOVERNANCEOBJECT -- Dynode list not synced\n");
             return;
         }
 
@@ -165,10 +165,10 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
 
         pfrom->setAskFor.erase(nHash);
 
-        LogPrint("gobject", "SNGOVERNANCEOBJECT -- Received object: %s\n", strHash);
+        LogPrint("gobject", "DNGOVERNANCEOBJECT -- Received object: %s\n", strHash);
 
         if(!AcceptObjectMessage(nHash)) {
-            LogPrintf("SNGOVERNANCEOBJECT -- Received unrequested object: %s\n", strHash);
+            LogPrintf("DNGOVERNANCEOBJECT -- Received unrequested object: %s\n", strHash);
             return;
         }
 
@@ -176,13 +176,13 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
 
         if(mapSeenGovernanceObjects.count(nHash)) {
             // TODO - print error code? what if it's GOVOBJ_ERROR_IMMATURE?
-            LogPrint("gobject", "SNGOVERNANCEOBJECT -- Received already seen object: %s\n", strHash);
+            LogPrint("gobject", "DNGOVERNANCEOBJECT -- Received already seen object: %s\n", strHash);
             return;
         }
 
         bool fRateCheckBypassed = false;
         if(!DynodeRateCheck(govobj, true, false, fRateCheckBypassed)) {
-            LogPrintf("SNGOVERNANCEOBJECT -- Dynode rate check failed - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
+            LogPrintf("DNGOVERNANCEOBJECT -- Dynode rate check failed - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
             return;
         }
 
@@ -194,18 +194,18 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
 
         if(fDynodeMissing) {
             mapDynodeOrphanObjects.insert(std::make_pair(nHash, object_time_pair_t(govobj, GetAdjustedTime() + GOVERNANCE_ORPHAN_EXPIRATION_TIME)));
-            LogPrintf("SNGOVERNANCEOBJECT -- Missing Dynode for: %s, strError = %s\n", strHash, strError);
+            LogPrintf("DNGOVERNANCEOBJECT -- Missing Dynode for: %s, strError = %s\n", strHash, strError);
             // fIsValid must also be false here so we will return early in the next if block
         }
         if(!fIsValid) {
             mapSeenGovernanceObjects.insert(std::make_pair(nHash, SEEN_OBJECT_ERROR_INVALID));
-            LogPrintf("SNGOVERNANCEOBJECT -- Governance object is invalid - %s\n", strError);
+            LogPrintf("DNGOVERNANCEOBJECT -- Governance object is invalid - %s\n", strError);
             return;
         }
 
         if(fRateCheckBypassed) {
             if(!DynodeRateCheck(govobj, true, true, fRateCheckBypassed)) {
-                LogPrintf("SNGOVERNANCEOBJECT -- Dynode rate check failed (after signature verification) - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
+                LogPrintf("DNGOVERNANCEOBJECT -- Dynode rate check failed (after signature verification) - %s - (current block height %d) \n", strHash, nCachedBlockHeight);
                 return;
             }
         }
@@ -216,7 +216,7 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
 
         if(AddGovernanceObject(govobj, pfrom))
         {
-            LogPrintf("SNGOVERNANCEOBJECT -- %s new\n", strHash);
+            LogPrintf("DNGOVERNANCEOBJECT -- %s new\n", strHash);
             govobj.Relay();
         }
 
@@ -232,18 +232,18 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
     }
 
     // A NEW GOVERNANCE OBJECT VOTE HAS ARRIVED
-    else if (strCommand == NetMsgType::SNGOVERNANCEOBJECTVOTE)
+    else if (strCommand == NetMsgType::DNGOVERNANCEOBJECTVOTE)
     {
         // Ignore such messages until Dynode list is synced
         if(!dynodeSync.IsDynodeListSynced()) {
-            LogPrint("gobject", "SNGOVERNANCEOBJECTVOTE -- Dynode list not synced\n");
+            LogPrint("gobject", "DNGOVERNANCEOBJECTVOTE -- Dynode list not synced\n");
             return;
         }
 
         CGovernanceVote vote;
         vRecv >> vote;
 
-        LogPrint("gobject", "SNGOVERNANCEOBJECTVOTE -- Received vote: %s\n", vote.ToString());
+        LogPrint("gobject", "DNGOVERNANCEOBJECTVOTE -- Received vote: %s\n", vote.ToString());
 
         uint256 nHash = vote.GetHash();
         std::string strHash = nHash.ToString();
@@ -251,19 +251,19 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, std::string& strCommand, C
         pfrom->setAskFor.erase(nHash);
 
         if(!AcceptVoteMessage(nHash)) {
-            LogPrint("gobject", "SNGOVERNANCEOBJECTVOTE -- Received unrequested vote object: %s, hash: %s, peer = %d\n",
+            LogPrint("gobject", "DNGOVERNANCEOBJECTVOTE -- Received unrequested vote object: %s, hash: %s, peer = %d\n",
                       vote.ToString(), strHash, pfrom->GetId());
             return;
         }
 
         CGovernanceException exception;
         if(ProcessVote(pfrom, vote, exception)) {
-            LogPrint("gobject", "SNGOVERNANCEOBJECTVOTE -- %s new\n", strHash);
+            LogPrint("gobject", "DNGOVERNANCEOBJECTVOTE -- %s new\n", strHash);
             dynodeSync.AddedGovernanceItem();
             vote.Relay();
         }
         else {
-            LogPrint("gobject", "SNGOVERNANCEOBJECTVOTE -- Rejected vote, error = %s\n", exception.what());
+            LogPrint("gobject", "DNGOVERNANCEOBJECTVOTE -- Rejected vote, error = %s\n", exception.what());
             if((exception.GetNodePenalty() != 0) && dynodeSync.IsSynced()) {
                 Misbehaving(pfrom->GetId(), exception.GetNodePenalty());
             }
@@ -410,7 +410,7 @@ void CGovernanceManager::UpdateCachesAndClean()
 {
     LogPrint("gobject", "CGovernanceManager::UpdateCachesAndClean\n");
 
-    std::vector<uint256> vecDirtyHashes = snodeman.GetAndClearDirtyGovernanceObjectHashes();
+    std::vector<uint256> vecDirtyHashes = dnodeman.GetAndClearDirtyGovernanceObjectHashes();
 
     LOCK(cs);
 
@@ -500,7 +500,7 @@ void CGovernanceManager::UpdateCachesAndClean()
         if((pObj->IsSetCachedDelete() || pObj->IsSetExpired()) &&
            (nTimeSinceDeletion >= GOVERNANCE_DELETION_DELAY)) {
             LogPrintf("CGovernanceManager::UpdateCachesAndClean -- erase obj %s\n", (*it).first.ToString());
-            snodeman.RemoveGovernanceObject(pObj->GetHash());
+            dnodeman.RemoveGovernanceObject(pObj->GetHash());
 
             // Remove vote references
             const object_ref_cache_t::list_t& listItems = mapVoteToObject.GetItemList();
@@ -551,7 +551,7 @@ std::vector<CGovernanceVote> CGovernanceManager::GetMatchingVotes(const uint256&
     return govobj.GetVoteFile().GetVotes();
 }
 
-std::vector<CGovernanceVote> CGovernanceManager::GetCurrentVotes(const uint256& nParentHash, const CTxIn& snCollateralOutpointFilter)
+std::vector<CGovernanceVote> CGovernanceManager::GetCurrentVotes(const uint256& nParentHash, const CTxIn& dnCollateralOutpointFilter)
 {
     LOCK(cs);
     std::vector<CGovernanceVote> vecResult;
@@ -562,33 +562,33 @@ std::vector<CGovernanceVote> CGovernanceManager::GetCurrentVotes(const uint256& 
     CGovernanceObject& govobj = it->second;
 
     // Compile a list of Dynode collateral outpoints for which to get votes
-    std::vector<CTxIn> vecSNTxIn;
-    if (snCollateralOutpointFilter == CTxIn()) {
-        std::vector<CDynode> snlist = snodeman.GetFullDynodeVector();
-        for (std::vector<CDynode>::iterator it = snlist.begin(); it != snlist.end(); ++it)
+    std::vector<CTxIn> vecDNTxIn;
+    if (dnCollateralOutpointFilter == CTxIn()) {
+        std::vector<CDynode> dnlist = dnodeman.GetFullDynodeVector();
+        for (std::vector<CDynode>::iterator it = dnlist.begin(); it != dnlist.end(); ++it)
         {
-           vecSNTxIn.push_back(it->vin);
+           vecDNTxIn.push_back(it->vin);
         }
     }
     else {
-        vecSNTxIn.push_back(snCollateralOutpointFilter);
+        vecDNTxIn.push_back(dnCollateralOutpointFilter);
     }
 
-    // Loop thru each SN collateral outpoint and get the votes for the `nParentHash` governance object
-    for (std::vector<CTxIn>::iterator it = vecSNTxIn.begin(); it != vecSNTxIn.end(); ++it)
+    // Loop thru each DN collateral outpoint and get the votes for the `nParentHash` governance object
+    for (std::vector<CTxIn>::iterator it = vecDNTxIn.begin(); it != vecDNTxIn.end(); ++it)
     {
-        CTxIn &snCollateralOutpoint = *it;
+        CTxIn &dnCollateralOutpoint = *it;
 
         // get a vote_rec_t from the govobj
         vote_rec_t voteRecord;
-        if (!govobj.GetCurrentSNVotes(snCollateralOutpoint, voteRecord)) continue;
+        if (!govobj.GetCurrentDNVotes(dnCollateralOutpoint, voteRecord)) continue;
 
         for (vote_instance_m_it it3 = voteRecord.mapInstances.begin(); it3 != voteRecord.mapInstances.end(); ++it3) {
             int signal = (it3->first);
             int outcome = ((it3->second).eOutcome);
             int64_t nCreationTime = ((it3->second).nCreationTime);
 
-            CGovernanceVote vote = CGovernanceVote(snCollateralOutpoint, nParentHash, (vote_signal_enum_t)signal, (vote_outcome_enum_t)outcome);
+            CGovernanceVote vote = CGovernanceVote(dnCollateralOutpoint, nParentHash, (vote_signal_enum_t)signal, (vote_outcome_enum_t)outcome);
             vote.SetTime(nCreationTime);
 
             vecResult.push_back(vote);
@@ -873,7 +873,7 @@ bool CGovernanceManager::DynodeRateCheck(const CGovernanceObject& govobj, bool f
     double dRate = 0.0;
     CRateCheckBuffer buffer;    switch(nObjectType) {
     case GOVERNANCE_OBJECT_TRIGGER:
-        // Allow 1 trigger per sn per cycle, with a small fudge factor
+        // Allow 1 trigger per dn per cycle, with a small fudge factor
         dMaxRate = 1.1 / nSuperblockCycleSeconds;
         buffer = it->second.triggerBuffer;
         buffer.AddTimestamp(nTimestamp);
@@ -918,7 +918,7 @@ bool CGovernanceManager::ProcessVote(CNode* pfrom, const CGovernanceVote& vote, 
     if(mapInvalidVotes.HasKey(nHashVote)) {
         std::ostringstream ostr;
         ostr << "CGovernanceManager::ProcessVote -- Old invalid vote "
-                << ", SN outpoint = " << vote.GetVinDynode().prevout.ToStringShort()
+                << ", DN outpoint = " << vote.GetVinDynode().prevout.ToStringShort()
                 << ", governance object hash = " << vote.GetParentHash().ToString() << "\n";
         LogPrintf(ostr.str().c_str());
         exception = CGovernanceException(ostr.str(), GOVERNANCE_EXCEPTION_PERMANENT_ERROR, 20);
@@ -930,7 +930,7 @@ bool CGovernanceManager::ProcessVote(CNode* pfrom, const CGovernanceVote& vote, 
     if(it == mapObjects.end()) {
         std::ostringstream ostr;
         ostr << "CGovernanceManager::ProcessVote -- Unknown parent object "
-             << ", SN outpoint = " << vote.GetVinDynode().prevout.ToStringShort()
+             << ", DN outpoint = " << vote.GetVinDynode().prevout.ToStringShort()
              << ", governance object hash = " << vote.GetParentHash().ToString() << "\n";
         exception = CGovernanceException(ostr.str(), GOVERNANCE_EXCEPTION_WARNING);
         if(mapOrphanVotes.Insert(nHashGovobj, vote_time_pair_t(vote, GetAdjustedTime() + GOVERNANCE_ORPHAN_EXPIRATION_TIME))) {
@@ -955,7 +955,7 @@ bool CGovernanceManager::ProcessVote(CNode* pfrom, const CGovernanceVote& vote, 
         mapVoteToObject.Insert(nHashVote, &govobj);
 
         if(govobj.GetObjectType() == GOVERNANCE_OBJECT_WATCHDOG) {
-            snodeman.UpdateWatchdogVoteTime(vote.GetVinDynode());
+            dnodeman.UpdateWatchdogVoteTime(vote.GetVinDynode());
         }
     }
     return fOk;
@@ -1032,7 +1032,7 @@ void CGovernanceManager::RequestGovernanceObject(CNode* pfrom, const uint256& nH
         }
     }
 
-    pfrom->PushMessage(NetMsgType::SNGOVERNANCESYNC, nHash, filter);
+    pfrom->PushMessage(NetMsgType::DNGOVERNANCESYNC, nHash, filter);
 }
 
 int CGovernanceManager::RequestGovernanceObjectVotes(CNode* pnode)
@@ -1060,7 +1060,7 @@ int CGovernanceManager::RequestGovernanceObjectVotes(const std::vector<CNode*>& 
     size_t nProjectedVotes = 1;
     if(Params().NetworkIDString() != CBaseChainParams::MAIN) {
         nProjectedVotes = 1;
-        nMaxObjRequestsPerNode = std::max(1, int(nProjectedVotes / std::max(1, snodeman.size())));    }
+        nMaxObjRequestsPerNode = std::max(1, int(nProjectedVotes / std::max(1, dnodeman.size())));    }
 
     std::vector<CGovernanceObject*> vpGovObjsTmp;
     std::vector<CGovernanceObject*> vpGovObjsTriggersTmp;
@@ -1177,15 +1177,15 @@ int CGovernanceManager::GetDynodeIndex(const CTxIn& dynodeVin)
 {
     LOCK(cs);
     bool fIndexRebuilt = false;
-    int nSNIndex = snodeman.GetDynodeIndex(dynodeVin, fIndexRebuilt);
+    int nDNIndex = dnodeman.GetDynodeIndex(dynodeVin, fIndexRebuilt);
     if(fIndexRebuilt) {
         RebuildVoteMaps();
-        nSNIndex = snodeman.GetDynodeIndex(dynodeVin, fIndexRebuilt);
+        nDNIndex = dnodeman.GetDynodeIndex(dynodeVin, fIndexRebuilt);
         if(fIndexRebuilt) {
             LogPrintf("CGovernanceManager::GetDynodeIndex -- WARNING: vote map rebuild failed\n");
         }
     }
-    return nSNIndex;
+    return nDNIndex;
 }
 
 void CGovernanceManager::RebuildVoteMaps()
@@ -1193,7 +1193,7 @@ void CGovernanceManager::RebuildVoteMaps()
     for(object_m_it it = mapObjects.begin(); it != mapObjects.end(); ++it) {
         it->second.RebuildVoteMap();
     }
-    snodeman.ClearOldDynodeIndex();
+    dnodeman.ClearOldDynodeIndex();
 }
 
 void CGovernanceManager::AddCachedTriggers()

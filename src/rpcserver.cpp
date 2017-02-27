@@ -342,22 +342,22 @@ static const CRPCCommand vRPCCommands[] =
     { "Hidden",             "reconsiderblock",        &reconsiderblock,        true  },
     { "Hidden",             "setmocktime",            &setmocktime,            true  },
 #ifdef ENABLE_WALLET
-    { "Hidden",             "resendwallettransactions", &resendwallettransactions, true},
+    { "Hidden",                 "resendwallettransactions", &resendwallettransactions, true},
 #endif
 
     /* Dynamic features */
-    { "Dynamic",               "dynode",              &dynode,              true  },
-    { "Dynamic",               "dynodelist",          &dynodelist,          true  },
-    { "Dynamic",               "dynodebroadcast",     &dynodebroadcast,     true  },
-    { "Dynamic",               "gobject",                &gobject,                true  },
-    { "Dynamic",               "getgovernanceinfo",      &getgovernanceinfo,      true  },
-    { "Dynamic",               "getsuperblockbudget",    &getsuperblockbudget,    true  },
-    { "Dynamic",               "voteraw",                &voteraw,                true  },
-    { "Dynamic",               "snsync",                 &snsync,                 true  },
-    { "Dynamic",               "spork",                  &spork,                  true  },
-    { "Dynamic",               "getpoolinfo",            &getpoolinfo,            true  },
+    { "Dynamic",                "dynode",                 &dynode,                 true  },
+    { "Dynamic",                "dynodelist",             &dynodelist,             true  },
+    { "Dynamic",                "dynodebroadcast",        &dynodebroadcast,        true  },
+    { "Dynamic",                "gobject",                &gobject,                true  },
+    { "Dynamic",                "getgovernanceinfo",      &getgovernanceinfo,      true  },
+    { "Dynamic",                "getsuperblockbudget",    &getsuperblockbudget,    true  },
+    { "Dynamic",                "voteraw",                &voteraw,                true  },
+    { "Dynamic",                "dnsync",                 &dnsync,                 true  },
+    { "Dynamic",                "spork",                  &spork,                  true  },
+    { "Dynamic",                "getpoolinfo",            &getpoolinfo,            true  },
 #ifdef ENABLE_WALLET
-    { "Dynamic",               "privatesend",            &privatesend,            false },
+    { "Dynamic",                "privatesend",            &privatesend,            false },
 
     /* Wallet */
     { "Wallet",             "keepass",                &keepass,                true },

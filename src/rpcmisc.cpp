@@ -122,7 +122,7 @@ UniValue debug(const UniValue& params, bool fHelp)
         throw runtime_error(
             "debug ( 0|1|addrman|alert|bench|coindb|db|lock|rand|rpc|selectcoins|mempool"
             "|mempoolrej|net|proxy|prune|http|libevent|tor|zmq|"
-            "dynamic|privatesend|instantsend|dynode|spork|keepass|snpayments|gobject )\n"
+            "dynamic|privatesend|instantsend|dynode|spork|keepass|dnpayments|gobject )\n"
             "Change debug category on the fly. Specify single category or use comma to specify many.\n"
             "\nExamples:\n"
             + HelpExampleCli("debug", "dynamic")
@@ -140,11 +140,11 @@ UniValue debug(const UniValue& params, bool fHelp)
     return "Debug mode: " + (fDebug ? strMode : "off");
 }
 
-UniValue snsync(const UniValue& params, bool fHelp)
+UniValue dnsync(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "snsync [status|next|reset]\n"
+            "dnsync [status|next|reset]\n"
             "Returns the sync status, updates to the next step or resets it entirely.\n"
         );
 

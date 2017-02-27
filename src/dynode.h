@@ -17,8 +17,8 @@ class CDynodeBroadcast;
 class CDynodePing;
 
 static const int DYNODE_CHECK_SECONDS                = 5;
-static const int DYNODE_MIN_SNB_SECONDS              = 5 * 60;
-static const int DYNODE_MIN_SNP_SECONDS              = 10 * 60;
+static const int DYNODE_MIN_DNB_SECONDS              = 5 * 60;
+static const int DYNODE_MIN_DNP_SECONDS              = 10 * 60;
 static const int DYNODE_EXPIRATION_SECONDS           = 65 * 60;
 static const int DYNODE_WATCHDOG_MAX_SECONDS         = 120 * 60;
 static const int DYNODE_NEW_START_REQUIRED_SECONDS   = 180 * 60;
@@ -33,7 +33,7 @@ class CDynodePing
 public:
     CTxIn vin;
     uint256 blockHash;
-    int64_t sigTime; //snb message times
+    int64_t sigTime; //dnb message times
     std::vector<unsigned char> vchSig;
     //removed stop
 
@@ -81,7 +81,7 @@ public:
     bool Sign(CKey& keyDynode, CPubKey& pubKeyDynode);
     bool CheckSignature(CPubKey& pubKeyDynode, int &nDos);
     bool SimpleCheck(int& nDos);
-    bool CheckAndUpdate(CDynode* psn, bool fFromNewBroadcast, int& nDos);
+    bool CheckAndUpdate(CDynode* pdn, bool fFromNewBroadcast, int& nDos);
     void Relay();
 
     CDynodePing& operator=(CDynodePing from)
@@ -122,7 +122,7 @@ struct dynode_info_t
     CService addr;
     CPubKey pubKeyCollateralAddress;
     CPubKey pubKeyDynode;
-    int64_t sigTime; //snb message time
+    int64_t sigTime; //dnb message time
     int64_t nLastSsq; //the psq count from the last psq broadcast of this node
     int64_t nTimeLastChecked;
     int64_t nTimeLastPaid;
@@ -161,7 +161,7 @@ public:
     CPubKey pubKeyDynode;
     CDynodePing lastPing;
     std::vector<unsigned char> vchSig;
-    int64_t sigTime; //snb message time
+    int64_t sigTime; //dnb message time
     int64_t nLastSsq; //the psq count from the last psq broadcast of this node
     int64_t nTimeLastChecked;
     int64_t nTimeLastPaid;
@@ -180,7 +180,7 @@ public:
 
     CDynode();
     CDynode(const CDynode& other);
-    CDynode(const CDynodeBroadcast& snb);
+    CDynode(const CDynodeBroadcast& dnb);
     CDynode(CService addrNew, CTxIn vinNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyDynodeNew, int nProtocolVersionIn);
 
     ADD_SERIALIZE_METHODS;
@@ -242,7 +242,7 @@ public:
     // CALCULATE A RANK AGAINST OF GIVEN BLOCK
     arith_uint256 CalculateScore(const uint256& blockHash);
 
-    bool UpdateFromNewBroadcast(CDynodeBroadcast& snb);
+    bool UpdateFromNewBroadcast(CDynodeBroadcast& dnb);
 
     void Check(bool fForce = false);
 
@@ -344,7 +344,7 @@ public:
 
     bool fRecovery;
     CDynodeBroadcast() : CDynode(), fRecovery(false) {}
-    CDynodeBroadcast(const CDynode& sn) : CDynode(sn), fRecovery(false) {}
+    CDynodeBroadcast(const CDynode& dn) : CDynode(dn), fRecovery(false) {}
     CDynodeBroadcast(CService addrNew, CTxIn vinNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyDynodeNew, int nProtocolVersionIn) :
         CDynode(addrNew, vinNew, pubKeyCollateralAddressNew, pubKeyDynodeNew, nProtocolVersionIn), fRecovery(false) {}
 
@@ -372,11 +372,11 @@ public:
     }
 
     /// Create Dynode broadcast, needs to be relayed manually after that
-    static bool Create(CTxIn vin, CService service, CKey keyCollateralAddressNew, CPubKey pubKeyCollateralAddressNew, CKey keyDynodeNew, CPubKey pubKeyDynodeNew, std::string &strErrorRet, CDynodeBroadcast &snbRet);
-    static bool Create(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CDynodeBroadcast &snbRet, bool fOffline = false);
+    static bool Create(CTxIn vin, CService service, CKey keyCollateralAddressNew, CPubKey pubKeyCollateralAddressNew, CKey keyDynodeNew, CPubKey pubKeyDynodeNew, std::string &strErrorRet, CDynodeBroadcast &dnbRet);
+    static bool Create(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CDynodeBroadcast &dnbRet, bool fOffline = false);
 
     bool SimpleCheck(int& nDos);
-    bool Update(CDynode* psn, int& nDos);
+    bool Update(CDynode* pdn, int& nDos);
     bool CheckOutpoint(int& nDos);
 
     bool Sign(CKey& keyCollateralAddress);

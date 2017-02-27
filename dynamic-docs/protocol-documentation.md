@@ -51,7 +51,7 @@ Bitcoin Public Key https://bitcoin.org/en/glossary/public-key
 
 ## Message Types
 
-### SNANNOUNCE - "snb"
+### DNANNOUNCE - "dnb"
 
 CDynodeBroadcast
 
@@ -69,7 +69,7 @@ Whenever a Dynode comes online or a client is syncing, they will send this messa
 | # | lastPing | CDynodePing | The last known ping of the Dynode
 | 8 | nLastPsq | int64_t | The last time the Dynode sent a PSQ message (for mixing)
 
-### SNPING - "snp"
+### DNPING - "dnp"
 
 CDynodePing
 
@@ -82,7 +82,7 @@ Every few minutes, Dynodes ping the network with a message that propagates the w
 | 8 | sigTime | int64_t | Signature time for this ping
 | 71-73 | vchSig | char[] | Signature of this message by Dynode (verifiable via pubKeyDynode)
 
-### DynodePAYMENTVOTE - "snw"
+### DynodePAYMENTVOTE - "dnw"
 
 CDynodePaymentVote
 
@@ -184,7 +184,7 @@ Transaction Lock Vote
 | 36 | outpointDynode | COutPoint | The utxo of the dynode which is signing the vote
 | 71-73 | vchDynodeSignature | char[] | Signature of this message by dynode (verifiable via pubKeyDynode)
 
-### SNGOVERNANCEOBJECT - "govobj"
+### DNGOVERNANCEOBJECT - "govobj"
 
 Governance Object
 
@@ -201,7 +201,7 @@ A proposal, contract or setting.
 | 41 | vinDynode | CTxIn | Unspent output for the Dynode which is signing this object
 | 71-73 | vchSig | char[] | Signature of the Dynode
 
-### SNGOVERNANCEOBJECTVOTE - "govobjvote"
+### DNGOVERNANCEOBJECTVOTE - "govobjvote"
 
 Governance Vote
 

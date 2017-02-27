@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     fCheckpointsEnabled = false;
 
     // force UpdatedBlockTip to initialize pCurrentBlockIndex
-    snpayments.UpdatedBlockTip(chainActive.Tip());
+    dnpayments.UpdatedBlockTip(chainActive.Tip());
 
     // Simple block creation, nothing special yet:
     BOOST_CHECK(pblocktemplate = CreateNewBlock(chainparams, scriptPubKey));

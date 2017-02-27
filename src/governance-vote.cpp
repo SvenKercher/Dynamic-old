@@ -276,7 +276,7 @@ bool CGovernanceVote::IsValid(bool fSignatureCheck) const
         return false;
     }
 
-    dynode_info_t infoSn = snodeman.GetDynodeInfo(vinDynode);
+    dynode_info_t infoSn = dnodeman.GetDynodeInfo(vinDynode);
     if(!infoSn.fInfoValid) {
         LogPrint("gobject", "CGovernanceVote::IsValid -- Unknown Dynode - %s\n", vinDynode.prevout.ToStringShort());
         return false;
