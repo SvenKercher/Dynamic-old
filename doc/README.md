@@ -12,7 +12,7 @@ Dynamic Integration/Staging Tree
 ================================
 ![DYN logo](https://github.com/Duality-Solutions/Dynamic/blob/master/src/qt/res/images/drk/dynamic_logo_horizontal.png)
 
-**Copyright (c) 2015-2017 Duality Blockchain Solutions**
+**Copyright (c) 2016-2017 Duality Blockchain Solutions**
 
 What is Dynamic?
 ----------------
