@@ -188,7 +188,7 @@
         <translation>錢包已加密</translation>
     </message>
     <message>
-        <source>Dynamic-Core will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
+        <source>Dynamic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
         <translation>達世幣軟體現在要關閉，好完成加密程序。請注意，加密錢包不能完全防止入侵你的電腦的惡意程式偷取達世幣。</translation>
     </message>
     <message>
@@ -3220,7 +3220,7 @@ https://www.transifex.com/projects/p/dynamic/</translation>
     </message>
 </context>
 <context>
-    <name>dynamic-core</name>
+    <name>dynamic</name>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
         <translation>和指定的位址繫結，並且一直在指定位址聽候連線。IPv6 請用 [主機]:通訊埠 這種格式</translation>

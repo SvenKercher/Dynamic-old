@@ -176,7 +176,7 @@
         <translation>Plånbok krypterad</translation>
     </message>
     <message>
-        <source>Dynamic-Core will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
+        <source>Dynamic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
         <translation>Dynamic kommer nu att färdigställa krypteringsprocessen. Kom ihåg att krypteringen av din plånbok inte kan skydda dig helt och hållet från att dina Dynamic stjäls av skadeprogram som har infekterat din dator.</translation>
     </message>
     <message>
@@ -2656,7 +2656,7 @@ https://www.transifex.com/projects/p/dynamic/</translation>
     </message>
 </context>
 <context>
-    <name>dynamic-core</name>
+    <name>dynamic</name>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
         <translation>Sammanbind till fastställd adress och avlyssna alltid den. Använd [host]:port-notation för IPv6</translation>

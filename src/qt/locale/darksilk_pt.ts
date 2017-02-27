@@ -188,7 +188,7 @@
         <translation>Carteira cifrada</translation>
     </message>
     <message>
-        <source>Dynamic-Core will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
+        <source>Dynamic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
         <translation>O cliente Dynamic irá fechar para finalizar o processo de cifra. Lembre-se que cifrar a sua carteira não consegue proteger totalmente as suas Dynamic contra roubos feitos por malware presente no seu computador.</translation>
     </message>
     <message>
@@ -3304,7 +3304,7 @@ https://www.transifex.com/projects/p/dynamic/</translation>
     </message>
 </context>
 <context>
-    <name>dynamic-core</name>
+    <name>dynamic</name>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
         <translation>Vincular a um determinado endereço e ouvir sempre aí. Use a notação [endereço]:porta para IPv6</translation>

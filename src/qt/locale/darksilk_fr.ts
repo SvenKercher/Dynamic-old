@@ -188,7 +188,7 @@
         <translation>Portefeuille chiffré</translation>
     </message>
     <message>
-        <source>Dynamic-Core will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
+        <source>Dynamic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your Dynamic from being stolen by malware infecting your computer.</source>
         <translation>Dynamic va à présent se fermer pour terminer le chiffrement. N'oubliez pas que le chiffrement de votre portefeuille n'est pas une protection totale contre le vol par des logiciels malveillants qui infecteraient votre ordinateur.</translation>
     </message>
     <message>
@@ -3320,7 +3320,7 @@ https://www.transifex.com/projects/p/dynamic/</translation>
     </message>
 </context>
 <context>
-    <name>dynamic-core</name>
+    <name>dynamic</name>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>
         <translation>Se lier à l'adresse donnée et toujours l'écouter. Utilisez la notation [host]:port pour l'IPv6</translation>

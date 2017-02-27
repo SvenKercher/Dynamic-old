@@ -17,7 +17,7 @@ packages:
 - "binutils-gold"
 reference_datetime: "2017-01-01 00:00:00"
 remotes:
-- "url": "https://github.com/duality-solutions/dynamic-core.git"
+- "url": "https://github.com/duality-solutions/dynamic.git"
   "dir": "dynamic"
 files:
 - "raspberrypi-tools.tar.gz"

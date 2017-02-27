@@ -2,7 +2,7 @@ Release Process
 ====================
 
 * update translations (ping wumpus, Diapolo or tcatm on IRC)
-* see https://github.com/duality-solutions/dynamic-core/blob/master/doc/translation_process.md#syncing-with-transifex
+* see https://github.com/duality-solutions/dynamic/blob/master/doc/translation_process.md#syncing-with-transifex
 
 * * *
 
@@ -132,19 +132,19 @@ rm SHA256SUMS
 (the digest algorithm is forced to sha256 to avoid confusion of the `Hash:` header that GPG adds with the SHA256 used for the files)
 
 - Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the dynamic.org server
-  into `/var/www/bin/dynamic-core-${VERSION}`
+  into `/var/www/bin/dynamic-${VERSION}`
 
 - Update dynamicpay.io version ***TODO***
 
   - First, check to see if the dynamicpay.io maintainers have prepared a
-    release: https://github.com/duality-solutions/dynamic-core/labels/Releases
+    release: https://github.com/duality-solutions/dynamic/labels/Releases
 
       - If they have, it will have previously failed their Travis CI
         checks because the final release files weren't uploaded.
         Trigger a Travis CI rebuild---if it passes, merge.
 
   - If they have not prepared a release, follow the Dynamic.org release
-    instructions: https://github.com/duality-solutions/dynamic-core#release-notes
+    instructions: https://github.com/duality-solutions/dynamic#release-notes
 
   - After the pull request is merged, the website will automatically show the newest version within 15 minutes, as well
     as update the OS download links. Ping @saivann/@harding (saivann/harding on Freenode) in case anything goes wrong

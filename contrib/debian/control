@@ -23,8 +23,8 @@ Build-Depends: debhelper,
  libprotobuf-dev, protobuf-compiler
 Standards-Version: 3.9.2
 Homepage: http://www.dynamicpay.io/
-Vcs-Git: git://github.com/duality-solutions/dynamic-core.git
-Vcs-Browser: http://github.com/duality-solutions/dynamic-core
+Vcs-Git: git://github.com/duality-solutions/dynamic.git
+Vcs-Browser: http://github.com/duality-solutions/dynamic
 
 Package: dynamicd
 Architecture: any

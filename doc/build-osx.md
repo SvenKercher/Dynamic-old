@@ -52,7 +52,7 @@ After exiting you will want to symlink berkeley-db4 and openssl:
 
 1. Clone the github tree to get the source code and go into the directory.
 
-        git clone https://github.com/duality-solutions/dynamic-core.git
+        git clone https://github.com/duality-solutions/dynamic.git
         cd dynamic
 
 2.  Build dynamicd:
