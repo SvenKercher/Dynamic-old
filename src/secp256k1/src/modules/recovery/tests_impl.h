@@ -7,8 +7,9 @@
 #ifndef _SECP256K1_MODULE_RECOVERY_TESTS_
 #define _SECP256K1_MODULE_RECOVERY_TESTS_
 
-void test_ecdsa_recovery_end_to_end(void) {
-    unsigned char extra[32] = {0x00};
+void test_ecdsa_recovery_end_to_end(void)
+{
+    unsigned char extra[32] = { 0x00 };
     unsigned char privkey[32];
     unsigned char message[32];
     secp256k1_ecdsa_signature signature[5];
@@ -61,12 +62,12 @@ void test_ecdsa_recovery_end_to_end(void) {
     CHECK(secp256k1_ecdsa_recoverable_signature_convert(ctx, &signature[4], &rsignature[4]) == 1);
     CHECK(secp256k1_ecdsa_verify(ctx, &signature[4], message, &pubkey) == 0);
     /* Recover again */
-    CHECK(secp256k1_ecdsa_recover(ctx, &recpubkey, &rsignature[4], message) == 0 ||
-          memcmp(&pubkey, &recpubkey, sizeof(pubkey)) != 0);
+    CHECK(secp256k1_ecdsa_recover(ctx, &recpubkey, &rsignature[4], message) == 0 || memcmp(&pubkey, &recpubkey, sizeof(pubkey)) != 0);
 }
 
 /* Tests several edge cases. */
-void test_ecdsa_recovery_edge_cases(void) {
+void test_ecdsa_recovery_edge_cases(void)
+{
     const unsigned char msg32[32] = {
         'T', 'h', 'i', 's', ' ', 'i', 's', ' ',
         'a', ' ', 'v', 'e', 'r', 'y', ' ', 's',
@@ -115,9 +116,9 @@ void test_ecdsa_recovery_edge_cases(void) {
         int i;
         int recid2;
         /* (4,4) encoded in DER. */
-        unsigned char sigbder[8] = {0x30, 0x06, 0x02, 0x01, 0x04, 0x02, 0x01, 0x04};
-        unsigned char sigcder_zr[7] = {0x30, 0x05, 0x02, 0x00, 0x02, 0x01, 0x01};
-        unsigned char sigcder_zs[7] = {0x30, 0x05, 0x02, 0x01, 0x01, 0x02, 0x00};
+        unsigned char sigbder[8] = { 0x30, 0x06, 0x02, 0x01, 0x04, 0x02, 0x01, 0x04 };
+        unsigned char sigcder_zr[7] = { 0x30, 0x05, 0x02, 0x00, 0x02, 0x01, 0x01 };
+        unsigned char sigcder_zs[7] = { 0x30, 0x05, 0x02, 0x01, 0x01, 0x02, 0x00 };
         unsigned char sigbderalt1[39] = {
             0x30, 0x25, 0x02, 0x20, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -188,12 +189,12 @@ void test_ecdsa_recovery_edge_cases(void) {
         sigbder[7]--;
         CHECK(secp256k1_ecdsa_signature_parse_der(ctx, &sig, sigbder, 6) == 0);
         CHECK(secp256k1_ecdsa_signature_parse_der(ctx, &sig, sigbder, sizeof(sigbder) - 1) == 0);
-        for(i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++) {
             int c;
             unsigned char orig = sigbder[i];
             /*Try every single-byte change.*/
             for (c = 0; c < 256; c++) {
-                if (c == orig ) {
+                if (c == orig) {
                     continue;
                 }
                 sigbder[i] = c;
@@ -206,7 +207,7 @@ void test_ecdsa_recovery_edge_cases(void) {
     /* Test r/s equal to zero */
     {
         /* (1,1) encoded in DER. */
-        unsigned char sigcder[8] = {0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01};
+        unsigned char sigcder[8] = { 0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x01 };
         unsigned char sigc64[64] = {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -239,9 +240,10 @@ void test_ecdsa_recovery_edge_cases(void) {
     }
 }
 
-void run_recovery_tests(void) {
+void run_recovery_tests(void)
+{
     int i;
-    for (i = 0; i < 64*count; i++) {
+    for (i = 0; i < 64 * count; i++) {
         test_ecdsa_recovery_end_to_end();
     }
     test_ecdsa_recovery_edge_cases();

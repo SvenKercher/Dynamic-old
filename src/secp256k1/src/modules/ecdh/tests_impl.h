@@ -7,7 +7,8 @@
 #ifndef _SECP256K1_MODULE_ECDH_TESTS_
 #define _SECP256K1_MODULE_ECDH_TESTS_
 
-void test_ecdh_generator_basepoint(void) {
+void test_ecdh_generator_basepoint(void)
+{
     unsigned char s_one[32] = { 0 };
     secp256k1_pubkey point[2];
     int i;
@@ -41,7 +42,8 @@ void test_ecdh_generator_basepoint(void) {
     }
 }
 
-void test_bad_scalar(void) {
+void test_bad_scalar(void)
+{
     unsigned char s_zero[32] = { 0 };
     unsigned char s_overflow[32] = {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -67,7 +69,8 @@ void test_bad_scalar(void) {
     CHECK(secp256k1_ecdh(ctx, output, &point, s_overflow) == 1);
 }
 
-void run_ecdh_tests(void) {
+void run_ecdh_tests(void)
+{
     test_ecdh_generator_basepoint();
     test_bad_scalar();
 }

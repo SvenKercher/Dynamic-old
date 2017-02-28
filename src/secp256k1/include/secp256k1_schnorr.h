@@ -1,11 +1,11 @@
 #ifndef _SECP256K1_SCHNORR_
-# define _SECP256K1_SCHNORR_
+#define _SECP256K1_SCHNORR_
 
-# include "secp256k1.h"
+#include "secp256k1.h"
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-# endif
+#endif
 
 /** Create a signature using a custom EC-Schnorr-SHA256 construction. It
  *  produces non-malleable 64-byte signatures which support public key recovery
@@ -25,13 +25,12 @@ extern "C" {
  *                   function (can be NULL)
  */
 SECP256K1_API int secp256k1_schnorr_sign(
-  const secp256k1_context* ctx,
-  unsigned char *sig64,
-  const unsigned char *msg32,
-  const unsigned char *seckey,
-  secp256k1_nonce_function noncefp,
-  const void *ndata
-) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
+    const secp256k1_context* ctx,
+    unsigned char* sig64,
+    const unsigned char* msg32,
+    const unsigned char* seckey,
+    secp256k1_nonce_function noncefp,
+    const void* ndata) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
 
 /** Verify a signature created by secp256k1_schnorr_sign.
  *  Returns: 1: correct signature
@@ -42,11 +41,10 @@ SECP256K1_API int secp256k1_schnorr_sign(
  *           pubkey:    the public key to verify with (cannot be NULL)
  */
 SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_verify(
-  const secp256k1_context* ctx,
-  const unsigned char *sig64,
-  const unsigned char *msg32,
-  const secp256k1_pubkey *pubkey
-) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
+    const secp256k1_context* ctx,
+    const unsigned char* sig64,
+    const unsigned char* msg32,
+    const secp256k1_pubkey* pubkey) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
 
 /** Recover an EC public key from a Schnorr signature created using
  *  secp256k1_schnorr_sign.
@@ -62,11 +60,10 @@ SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_verify(
  *                       be NULL)
  */
 SECP256K1_API int secp256k1_schnorr_recover(
-  const secp256k1_context* ctx,
-  secp256k1_pubkey *pubkey,
-  const unsigned char *sig64,
-  const unsigned char *msg32
-) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
+    const secp256k1_context* ctx,
+    secp256k1_pubkey* pubkey,
+    const unsigned char* sig64,
+    const unsigned char* msg32) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4);
 
 /** Generate a nonce pair deterministically for use with
  *  secp256k1_schnorr_partial_sign.
@@ -87,14 +84,13 @@ SECP256K1_API int secp256k1_schnorr_recover(
  *  Do not use the output as a private/public key pair for signing/validation.
  */
 SECP256K1_API int secp256k1_schnorr_generate_nonce_pair(
-  const secp256k1_context* ctx,
-  secp256k1_pubkey *pubnonce,
-  unsigned char *privnonce32,
-  const unsigned char *msg32,
-  const unsigned char *sec32,
-  secp256k1_nonce_function noncefp,
-  const void* noncedata
-) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
+    const secp256k1_context* ctx,
+    secp256k1_pubkey* pubnonce,
+    unsigned char* privnonce32,
+    const unsigned char* msg32,
+    const unsigned char* sec32,
+    secp256k1_nonce_function noncefp,
+    const void* noncedata) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
 
 /** Produce a partial Schnorr signature, which can be combined using
  *  secp256k1_schnorr_partial_combine, to end up with a full signature that is
@@ -139,13 +135,12 @@ SECP256K1_API int secp256k1_schnorr_generate_nonce_pair(
  *  by calling the function again (they are commutative and associative).
  */
 SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_partial_sign(
-  const secp256k1_context* ctx,
-  unsigned char *sig64,
-  const unsigned char *msg32,
-  const unsigned char *sec32,
-  const secp256k1_pubkey *pubnonce_others,
-  const unsigned char *secnonce32
-) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5) SECP256K1_ARG_NONNULL(6);
+    const secp256k1_context* ctx,
+    unsigned char* sig64,
+    const unsigned char* msg32,
+    const unsigned char* sec32,
+    const secp256k1_pubkey* pubnonce_others,
+    const unsigned char* secnonce32) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5) SECP256K1_ARG_NONNULL(6);
 
 /** Combine multiple Schnorr partial signatures.
  * Returns: 1: the passed signatures were successfully combined.
@@ -160,14 +155,13 @@ SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_partial_sign(
  *         n:        the number of signatures to combine (at least 1)
  */
 SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorr_partial_combine(
-  const secp256k1_context* ctx,
-  unsigned char *sig64,
-  const unsigned char * const * sig64sin,
-  size_t n
-) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
+    const secp256k1_context* ctx,
+    unsigned char* sig64,
+    const unsigned char* const* sig64sin,
+    size_t n) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 }
-# endif
+#endif
 
 #endif
