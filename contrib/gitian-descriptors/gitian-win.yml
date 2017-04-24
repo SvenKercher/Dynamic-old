@@ -23,7 +23,7 @@ packages:
 - "python"
 reference_datetime: "2017-01-01 00:00:00"
 remotes:
-- "url": "https://github.com/duality-solutions/dynamic.git"
+- "url": "https://github.com/coin-info-net/dynamic.git"
   "dir": "dynamic"
 files: []
 script: |
